@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+</head>
+<body>
+<div class="header">
+  <h1>Docs recommendation system</h1>
+</div>
+
+<form method="POST">
+    <div class="form-div">
+        <div>
+            <label for="url">URL:</label>
+            <input type="text" name="input-url">
+        </div>
+        <div class="generate">
+            <input type="submit" value="Go!">
+        </div>
+    </div>
+</form>
+
+</body>
+</html>
