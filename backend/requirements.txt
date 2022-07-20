@@ -1,2 +1,5 @@
+beautifulsoup4==4.11.1
 Flask==2.1.2
-numpy==1.18.5
+httplib2==0.20.4
+jusText==3.0.0
+requests==2.25.1
