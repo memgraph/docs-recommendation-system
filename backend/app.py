@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect
-from extract_content import extract_content_from_url
+from scraper import get_links
 
 app = Flask(__name__)
 
@@ -10,8 +10,9 @@ def home():
 @app.route("/", methods=["POST"])
 def redirect_docs():
     url = request.form["input-url"]
-    content = extract_content_from_url(url)
-    print(content)
+    print(url)
+    documents = get_links(url)
+    print("total docs: ", len(documents))
     return redirect(url)
 
 if __name__ == '__main__':
