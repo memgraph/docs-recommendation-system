@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect
 from scraper import get_links
+from tf_idf import get_recommendations
 
 app = Flask(__name__)
 
@@ -10,9 +11,15 @@ def home():
 @app.route("/", methods=["POST"])
 def redirect_docs():
     url = request.form["input-url"]
-    print(url)
-    documents = get_links(url)
-    print("total docs: ", len(documents))
+    documents, all_urls = get_links(url)
+
+    if len(documents) > 1:
+        recommendations = get_recommendations(documents)
+        for i in recommendations:
+            print("i:", i)
+            print("all_urls[i]:", all_urls[i])
+    else:
+        print("Only 1 or 0 documents, nothing to recommend!")
     return redirect(url)
 
 if __name__ == '__main__':

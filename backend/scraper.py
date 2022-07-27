@@ -5,7 +5,7 @@ import httplib2
 import os
 from csv import writer
 from os.path import abspath
-from extract_content import extract_text
+from extractor import extract_text
 
 http = httplib2.Http()
 
@@ -16,66 +16,71 @@ PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
 
 documents = []
 
+def is_valid_url(url, path):
+    if path and "#" in path:
+        return False
+    if path and path.startswith('/'):
+        path = urljoin(url, path)
+    if path and path.endswith('/'):
+        path = path[:-1]
+    if check_domain(path, url):
+        if path not in all_urls:
+            return path
+    return False
+
 def first_run(url):
-    global all_urls, documents
-    all_urls = []
+    global all_urls, todo_urls, documents
+    all_urls, todo_urls, documents = [], [], []
     response, content = http.request(url)
+
+    joined_path = is_valid_url(url, url)
+    if joined_path:
+        all_urls.append(joined_path)
 
     text = extract_text(content, "")
     documents.append(text)
-    print(documents)
 
     soup = BeautifulSoup(content, features="lxml")
-    
+    i = 0
     for link in soup.find_all('a', href=True):
         path = link.get('href')
-        if path and path.startswith('#'):
-            continue
-        if path and path.startswith('/'):
-            path = urljoin(url, path)
-        if path and path.endswith('/'):
-            path = path[:-1]
-        if check_domain(path, url):
-            if path not in all_urls:
-                all_urls.append(path)
-                todo_urls.append(path)
-        """#ako ne zelimo provjeravati domenu ovo otkomentiramo i zakomentiramo prethodne cetiri linije
-        urls.append(path)"""
-    # print("todo_urls:", todo_urls)
-    while todo_urls:
-        second_run(url)
-        break
+        joined_path = is_valid_url(url, path)
+        if joined_path:
+            all_urls.append(joined_path)
+            # todo_urls.append(joined_path)
+            text = extract_text("", joined_path)
+            documents.append(text)
+            i += 1
+            print(i)
+            """if i == 5:
+                break"""
+    # i = 0
+    """while todo_urls:
+        i += 1
+        print(i)
+        second_run(url)"""
    
     create_csv()
-    print(len(documents))
-    return documents
+    print("all urls:", all_urls)
+    print("urls len:", len(all_urls), "docs len:", len(documents))
+    return documents, all_urls
 
 def second_run(url):
     url_a = todo_urls.pop(0)
-    print(url_a)
     response, content = http.request(url_a)
 
     text = extract_text(content, "")
     documents.append(text)
-    print(len(documents))
 
     soup = BeautifulSoup(content, features="lxml")
     
     for link in soup.find_all('a', href=True):
         path = link.get('href')
-        if path and path.startswith('#'):
-            continue
-        if path and path.startswith('/'):
-            path = urljoin(url, path)
-        if path and path.endswith('/'):
-            path = path[:-1]
-        if check_domain(path, url):
-            if path not in all_urls:
-                all_urls.append(path)
-                text = extract_text("", path)
-                documents.append(text)
-                print(path)
-    # print("all_urls:", all_urls)
+        joined_path = is_valid_url(url, path)
+        if joined_path:
+            all_urls.append(joined_path)
+            text = extract_text("", joined_path)
+            documents.append(text)
     
 def create_csv():
     global counter
@@ -91,8 +96,8 @@ def check_domain(path, url):
     domain = urlparse(path).netloc
     maindomain = urlparse(url).netloc
 
-    # print("domain:", domain)
-    # print("maindomain:", maindomain)
+    """print("domain:", domain)
+    print("maindomain:", maindomain)"""
     if domain == maindomain:
         return True
     else:
