@@ -52,8 +52,8 @@ def first_run(url):
             documents.append(text)
             i += 1
             print(i)
-            """if i == 5:
-                break"""
+            if i == 5:
+                break
     # i = 0
     """while todo_urls:
         i += 1
