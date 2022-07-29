@@ -14,9 +14,9 @@ def home():
 @app.route("/", methods=["POST"])
 def redirect_docs():
     url = request.form["input-url"]
-    documents, all_urls = get_links(url)
+    method = int(request.form["model-method"])
 
-    method = int(input("Choose method 1 or 2: "))
+    documents, all_urls = get_links(url)
     
     if method == 1:
         if len(documents) > 1:
@@ -26,12 +26,12 @@ def redirect_docs():
                 print("all_urls[i]:", all_urls[i])
         else:
             print("Only 1 or 0 documents, nothing to recommend!")
-            
+
     elif method == 2:
         new_docs = open_ai(documents)
         for i in new_docs:
             print("i: ", i)
-            
+
     return redirect(url)
 
 if __name__ == '__main__':

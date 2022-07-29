@@ -1,5 +1,10 @@
 beautifulsoup4==4.11.1
 Flask==2.1.2
+gensim==4.2.0
 httplib2==0.20.4
 jusText==3.0.0
+numpy
+openai==0.22.0
+pandas
 requests==2.25.1
+scikit_learn==1.1.1

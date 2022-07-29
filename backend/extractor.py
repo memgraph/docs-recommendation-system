@@ -2,7 +2,6 @@ import requests
 import justext
 import string
 from gensim.parsing.preprocessing import remove_stopwords, strip_numeric
-import os
 import re
 import openai
 
@@ -24,6 +23,9 @@ new_docs = []
 
 def open_ai(documents):
     for text in documents:
+        if not text:
+            new_docs.append([" "])
+            continue
         text = "Extract keywords from this text: \n" + text
         openai.api_key = "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"
 
@@ -44,9 +46,9 @@ def open_ai(documents):
         new = new_t.translate(str.maketrans('', '', string.punctuation))
         new_text = re.sub(' +', ' ', new)
 
-        array = new_text.split(" ")
-        test_list = list(filter(None, array))
+        keywords = new_text.split(" ")
+        unique_keywords = set(filter(None, keywords))
        
-        new_docs.append(test_list)
+        new_docs.append(unique_keywords)
         
     return new_docs

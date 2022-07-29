@@ -12,4 +12,19 @@ services:
     ports:
       - "5000:5000"
     networks:
-      - app-tier  
+      - app-tier
+
+  memgraph-mage:
+    build: ./memgraph
+    ports:
+      - "7687:7687"
+      - "7444:7444"
+    entrypoint:
+      [
+          "/usr/lib/memgraph/memgraph",
+          "--telemetry-enabled=false",
+          "--query-modules-directory=/procedures,/transformations,/usr/lib/memgraph/query_modules",
+          "--log-level=TRACE",
+      ]
+    networks:
+      - app-tier

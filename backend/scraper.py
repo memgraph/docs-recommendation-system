@@ -85,7 +85,7 @@ def second_run(url):
 def create_csv():
     global counter
 
-    with open(PATH + '\dataset\links.csv', 'w', encoding = 'utf8', newline='') as f:
+    with open(PATH + '\dataset\links.csv', 'w', encoding='utf8', newline='') as f:
         thewriter = writer(f)
         header = ['All URLs:']
         thewriter.writerow(header)
