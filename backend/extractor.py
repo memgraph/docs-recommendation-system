@@ -4,7 +4,12 @@ import string
 from gensim.parsing.preprocessing import remove_stopwords, strip_numeric
 import re
 import openai
+from rake_nltk import Rake
+import nltk
 
+# TODO: obrisati openAi?
+
+# extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
 def extract_text(content, url):
     if url:
         response = requests.get(url)
@@ -19,12 +24,28 @@ def extract_text(content, url):
 
     return text
 
-new_docs = []
-
-def open_ai(documents):
+# extract keywords from given text using rake_nltk
+def rake(documents):
+    nltk.download('stopwords')
+    nltk.download('punkt')
+    new_docs = []
+    r = Rake()
     for text in documents:
         if not text:
-            new_docs.append([" "])
+            new_docs.append({" "})
+            continue
+        r.extract_keywords_from_text(text)
+        a = set(r.get_ranked_phrases())
+        new_docs.append(a)   
+    return new_docs
+
+# extract keywords from given text using openAi's GPT-3
+# TODO: vise ne koristimo ovo
+def open_ai(documents):
+    new_docs = []
+    for text in documents:
+        if not text:
+            new_docs.append({" "})
             continue
         text = "Extract keywords from this text: \n" + text
         openai.api_key = "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"

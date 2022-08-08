@@ -8,14 +8,13 @@ from os.path import abspath
 from extractor import extract_text
 
 http = httplib2.Http()
-
+PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
 todo_urls = []
 all_urls = []
-counter = 1
-PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
-
 documents = []
+counter = 1
 
+# clean up url and check its domain
 def is_valid_url(url, path):
     if path and "#" in path:
         return False
@@ -28,6 +27,8 @@ def is_valid_url(url, path):
             return path
     return False
 
+# TODO: remove break after 10 urls
+# extract all urls from given website using BS
 def first_run(url):
     global all_urls, todo_urls, documents
     all_urls, todo_urls, documents = [], [], []
@@ -47,24 +48,21 @@ def first_run(url):
         joined_path = is_valid_url(url, path)
         if joined_path:
             all_urls.append(joined_path)
-            # todo_urls.append(joined_path)
             text = extract_text("", joined_path)
             documents.append(text)
             i += 1
-            print(i)
-            if i == 5:
+            if i == 9:
                 break
-    # i = 0
     """while todo_urls:
         i += 1
         print(i)
         second_run(url)"""
    
     create_csv()
-    print("all urls:", all_urls)
-    print("urls len:", len(all_urls), "docs len:", len(documents))
+    
     return documents, all_urls
 
+# TODO: trenutno ne koristimo, triba istraziti ocemo li
 def second_run(url):
     url_a = todo_urls.pop(0)
     response, content = http.request(url_a)
@@ -81,7 +79,8 @@ def second_run(url):
             all_urls.append(joined_path)
             text = extract_text("", joined_path)
             documents.append(text)
-    
+
+# TODO: triba li nam ovo?
 def create_csv():
     global counter
 
@@ -91,18 +90,16 @@ def create_csv():
         thewriter.writerow(header)
         for path in all_urls:
             thewriter.writerow([path])
-                 
+
+# provides recommendations within the same documentation              
 def check_domain(path, url):
     domain = urlparse(path).netloc
     maindomain = urlparse(url).netloc
 
-    """print("domain:", domain)
-    print("maindomain:", maindomain)"""
     if domain == maindomain:
         return True
     else:
         return False
     
-
 def get_links(url):
     return first_run(url)
