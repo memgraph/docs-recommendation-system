@@ -58,7 +58,7 @@ def first_run(url):
         print(i)
         second_run(url)"""
    
-    create_csv()
+    #create_csv()
     
     return documents, all_urls
 

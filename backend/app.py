@@ -1,14 +1,13 @@
 from flask import Flask, render_template, request, redirect
 from scraper import get_links
 from tf_idf import get_recommendations
-from extractor import open_ai, rake
+from extractor import rake
 from database import populate_db, predict, memgraph, get_embeddings_as_properties
 from os.path import abspath
 from typing import Dict, List, Tuple
 import os
 import logging
 import validators
-
 
 #memgraph = gqlalchemy.Memgraph(host="memgraph-mage", port=7687)
 
@@ -24,12 +23,11 @@ def home():
 def redirect_docs():
     url = request.form["input-url"]
     
-    # TODO: bolje napraviti ovaj dio s valid i print
     # check if input url is valid
     valid = validators.url(url)
     if not valid:
         print("Please input valid url!")
-        #ponovni unos
+        # TODO: ponovni unos i napraviti alert
     
     ind = url.rfind('/')
     url_name = url[ind+1:]
@@ -78,7 +76,7 @@ def redirect_docs():
         
         # TODO: ako je top_rec prazan, tj count==0 onda napraviti neku funkciju koja poveze s wikipedijom?
     
-    # TODO: bez ovoga? nece redirectati nego ce sve biti na jednoj stranici i mozemo dodati opciju da redirecta na recommendation ako zeli
+    # TODO: bez redirecta, dodati opciju da redirecta na recommendation ako zeli
     return redirect(url)
 
 def log_time(func):
