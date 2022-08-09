@@ -1,8 +1,5 @@
 import requests
 import justext
-import string
-from gensim.parsing.preprocessing import remove_stopwords, strip_numeric
-import re
 from rake_nltk import Rake
 import nltk
 

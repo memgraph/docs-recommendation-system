@@ -3,8 +3,6 @@ from scraper import get_links
 from tf_idf import get_recommendations
 from extractor import rake
 from database import populate_db, predict, memgraph, get_embeddings_as_properties
-from os.path import abspath
-from typing import Dict, List, Tuple
 import os
 import logging
 import validators

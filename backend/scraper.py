@@ -53,13 +53,8 @@ def first_run(url):
             i += 1
             if i == 9:
                 break
-    """while todo_urls:
-        i += 1
-        print(i)
-        second_run(url)"""
    
     #create_csv()
-    
     return documents, all_urls
 
 # TODO: trenutno ne koristimo, triba istraziti ocemo li

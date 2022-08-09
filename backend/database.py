@@ -75,7 +75,7 @@ def populate_db(urls, key_sets):
                  
 # exports "embedding" property from all nodes in Memgraph db    
 def get_embeddings_as_properties():
-    embeddings: Dict[string, List[float]] = {}
+    embeddings: Dict[str, List[float]] = {}
     
     results = list (
         Match() 
