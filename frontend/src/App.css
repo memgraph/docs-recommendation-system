@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+.flexbox-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.form-div {
+    width: 50%;
+    border-right: 5px solid black;
+}
