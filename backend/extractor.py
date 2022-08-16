@@ -1,7 +1,7 @@
-import requests
 import justext
-from rake_nltk import Rake
 import nltk
+import requests
+from rake_nltk import Rake
 
 # extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
 def extract_text(content, url):

@@ -1,10 +1,9 @@
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-from urllib.parse import urlparse
-import httplib2
 import os
 from csv import writer
 from os.path import abspath
+from urllib.parse import urljoin, urlparse
+import httplib2
+from bs4 import BeautifulSoup
 from extractor import extract_text
 
 http = httplib2.Http()
@@ -12,7 +11,6 @@ PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
 todo_urls = []
 all_urls = []
 documents = []
-counter = 1
 
 # clean up url and check its domain
 def is_valid_url(url, path):
@@ -27,7 +25,6 @@ def is_valid_url(url, path):
             return path
     return False
 
-# TODO: remove break after 10 urls
 # extract all urls from given website using BS
 def first_run(url):
     global all_urls, todo_urls, documents
@@ -42,7 +39,7 @@ def first_run(url):
     documents.append(text)
 
     soup = BeautifulSoup(content, features="lxml")
-    i = 0
+  
     for link in soup.find_all('a', href=True):
         path = link.get('href')
         joined_path = is_valid_url(url, path)
@@ -50,14 +47,11 @@ def first_run(url):
             all_urls.append(joined_path)
             text = extract_text("", joined_path)
             documents.append(text)
-            i += 1
-            if i == 9:
-                break
-   
+        
     #create_csv()
     return documents, all_urls
 
-# TODO: trenutno ne koristimo, triba istraziti ocemo li
+# TODO: currently not used but still a possibility 
 def second_run(url):
     url_a = todo_urls.pop(0)
     response, content = http.request(url_a)
@@ -75,10 +69,8 @@ def second_run(url):
             text = extract_text("", joined_path)
             documents.append(text)
 
-# TODO: triba li nam ovo?
+# TODO: currently not used but still a possibility
 def create_csv():
-    global counter
-
     with open(PATH + '\dataset\links.csv', 'w', encoding='utf8', newline='') as f:
         thewriter = writer(f)
         header = ['All URLs:']

@@ -1,13 +1,12 @@
-from flask import Flask, render_template, request, redirect
+import logging
+import os
+import validators
+from flask import Flask, redirect, render_template, request
+from database import memgraph, populate_db
+from extractor import rake
+from node2vec import get_embeddings_as_properties, predict
 from scraper import get_links
 from tf_idf import get_recommendations
-from extractor import rake
-from database import populate_db, predict, memgraph, get_embeddings_as_properties
-import os
-import logging
-import validators
-
-#memgraph = gqlalchemy.Memgraph(host="memgraph-mage", port=7687)
 
 log = logging.getLogger(__name__)
 args = None
@@ -25,19 +24,18 @@ def redirect_docs():
     valid = validators.url(url)
     if not valid:
         print("Please input valid url!")
-        # TODO: ponovni unos i napraviti alert
+        # TODO: solve in frontend after enabling 
     
     ind = url.rfind('/')
     url_name = url[ind+1:]
     method = int(request.form["model-method"])
     documents, all_urls = get_links(url)
     
+    # TODO: method 1 and 2 are solely for developing purposes
+    # will be structured differently in frontend (no choosing methods, all will be available on the same page)
     if method == 1:
         if len(documents) > 1:
             recommendations = get_recommendations(documents)
-            """for i in recommendations:
-                print("i:", i)
-                print("all_urls[i]:", all_urls[i])"""
         else:
             print("Only 1 or 0 documents, nothing to recommend!")
 
@@ -63,18 +61,15 @@ def redirect_docs():
              
         for i in top_rec_name:   
             for result in nodes:
-                node: Node = result["node"]
-                if not "name" in node._properties:
-                    continue
-                else:
-                    if node._properties["name"] == i:
-                        top_rec.append(node._properties["url"])
-                        break
+                if(result["n_name"] == i):
+                    top_rec.append(result["n_url"])
+                    break
+            
         print("Top three recommendations", top_rec)
         
-        # TODO: ako je top_rec prazan, tj count==0 onda napraviti neku funkciju koja poveze s wikipedijom?
+        # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     
-    # TODO: bez redirecta, dodati opciju da redirecta na recommendation ako zeli
+    # TODO: resolve in frontend (without redirect)
     return redirect(url)
 
 def log_time(func):
@@ -97,7 +92,7 @@ def connect_to_memgraph():
     connection_established = False
     while not connection_established:
         if memgraph._get_cached_connection().is_active():
-                connection_established = True
+            connection_established = True
 
 if __name__ == '__main__':
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
