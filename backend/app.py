@@ -7,6 +7,7 @@ from extractor import rake
 from node2vec import get_embeddings_as_properties, predict
 from scraper import get_links
 from tf_idf import get_recommendations
+from link_prediction import link_prediction
 
 log = logging.getLogger(__name__)
 args = None
@@ -66,6 +67,31 @@ def redirect_docs():
                     break
             
         print("Top three recommendations", top_rec)
+        
+        # link prediction
+        nodes, precise_edges = link_prediction()
+        
+        count = 0
+        top_link_name = []
+        top_link_rec = []
+        
+        for key in precise_edges:
+            if count == 3:
+                break
+            if key[0] == url_name:
+                top_link_name.append(key[1])
+                count += 1
+            elif key[1] == url_name:
+                top_link_name.append(key[0])
+                count += 1
+             
+        for i in top_link_name:   
+            for result in nodes:
+                if(result["n_name"] == i):
+                    top_link_rec.append(result["n_url"])
+                    break
+                
+        print("\nTop three link prediction recommendations", top_link_rec)
         
         # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     

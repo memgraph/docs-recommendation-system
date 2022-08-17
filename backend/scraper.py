@@ -1,5 +1,6 @@
 import os
 from csv import writer
+from multiprocessing.pool import ThreadPool
 from os.path import abspath
 from urllib.parse import urljoin, urlparse
 import httplib2
@@ -11,6 +12,8 @@ PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
 todo_urls = []
 all_urls = []
 documents = []
+g_url = ""
+counter = 0
 
 # clean up url and check its domain
 def is_valid_url(url, path):
@@ -25,9 +28,20 @@ def is_valid_url(url, path):
             return path
     return False
 
+def scrape(link):
+    global documents, all_urls, counter
+    
+    counter += 1 
+    path = link.get('href')
+    joined_path = is_valid_url(g_url, path)
+    if joined_path and counter < 15:
+        all_urls.append(joined_path)
+        text = extract_text("", joined_path)
+        documents.append(text)
+                
 # extract all urls from given website using BS
 def first_run(url):
-    global all_urls, todo_urls, documents
+    global all_urls, todo_urls, documents, g_url
     all_urls, todo_urls, documents = [], [], []
     response, content = http.request(url)
 
@@ -37,16 +51,11 @@ def first_run(url):
 
     text = extract_text(content, "")
     documents.append(text)
-
+    g_url = url
     soup = BeautifulSoup(content, features="lxml")
-  
-    for link in soup.find_all('a', href=True):
-        path = link.get('href')
-        joined_path = is_valid_url(url, path)
-        if joined_path:
-            all_urls.append(joined_path)
-            text = extract_text("", joined_path)
-            documents.append(text)
+
+    with ThreadPool(20) as pool:
+        pool.map(scrape, soup.find_all('a', href=True))
         
     #create_csv()
     return documents, all_urls
