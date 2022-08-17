@@ -7,7 +7,7 @@ import httplib2
 from bs4 import BeautifulSoup
 from extractor import extract_text
 
-class MyClass:
+class Scraper:
     http = httplib2.Http()
     PATH = abspath(os.path.join(os.path.dirname(__file__),".."))
 
@@ -15,7 +15,7 @@ class MyClass:
     all_urls = []
     documents = []
     g_url = ""
-
+    
     # clean up url and check its domain
     def is_valid_url(self, url, path):
         if path and "#" in path:
@@ -30,7 +30,6 @@ class MyClass:
         return False
 
     def scrape(self, link):
-        #global documents, all_urls
         path = link.get('href')
         joined_path = self.is_valid_url(self.g_url, path)
         if joined_path:
@@ -40,7 +39,6 @@ class MyClass:
                     
     # extract all urls from given website using BS
     def first_run(self, url):
-        #global all_urls, todo_urls, documents, g_url
         self.all_urls, self.documents = [], []
         self.g_url = url
         response, content = self.http.request(url)
@@ -98,5 +96,5 @@ class MyClass:
             return False
     
 def get_links(url):
-    myClass = MyClass()
-    return myClass.first_run(url)
+    scraper = Scraper()
+    return scraper.first_run(url)
