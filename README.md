@@ -11,4 +11,4 @@ docker-compose build
 docker-compose up
 ```
 
-Check out the app at `localhost:5000`.
+Check out the app at `localhost:3000`.

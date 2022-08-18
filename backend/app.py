@@ -30,7 +30,7 @@ def redirect_docs():
         url = url[:ind]
         ind = url.rfind('/')
         url_name = url[ind + 1:]
-
+    
     documents, all_urls, status = get_links(url)
     if status == 404:
         return "404"

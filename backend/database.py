@@ -1,5 +1,5 @@
 from gqlalchemy import Memgraph, Match, Node
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Set
 import itertools
 import gc
 import numpy as np
@@ -9,8 +9,7 @@ memgraph = Memgraph()
 PRECISION_AT_K_CONST = 2 ** 8
 
 # jaccard's measure between two sets of keywords
-def jaccard_set(set1, set2):
-    
+def jaccard_set(set1: Set[str], set2: Set[str]) -> float:
     intersection = len(list(set(set1).intersection(set2)))
     union = (len(set1) + len(set2)) - intersection
     if union == 0:
@@ -19,7 +18,7 @@ def jaccard_set(set1, set2):
         return float(intersection) / union
 
 # creates url matrix based on jaccard's measure 
-def create_matrix(key_sets): 
+def create_matrix(key_sets: List[Set[str]]): 
     
     length = len(key_sets)
     A = np.empty((length, length))
@@ -33,7 +32,7 @@ def create_matrix(key_sets):
     return A
 
 # import data into Memgraph db
-def populate_db(urls, key_sets):
+def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     
     similarity_matrix = create_matrix(key_sets)
     query = """MATCH (n) DETACH DELETE (n);"""
@@ -120,11 +119,11 @@ def calculate_adjacency_matrix(embeddings: Dict[str, List[float]], threshold=0.0
     return adj_mtx_r
 
 # we need to sort predicted edges so that ones that are most likely to appear are first in list
-def predict(embeddings):
+def predict(embeddings: Dict[str, List[float]]) -> Dict[Tuple[str, str], float]:
     adj_matrix = calculate_adjacency_matrix(embeddings=embeddings, threshold=0.0)
     
     predicted_edge_list = adj_matrix
     sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
-    
+   
     return sorted_predicted_edges
         
