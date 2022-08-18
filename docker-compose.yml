@@ -44,7 +44,8 @@ services:
     environment:
       MG_HOST: memgraph-mage
       MG_PORT: 7687
+      WATCHPACK_POLLING: true
     depends_on:
-      - memgraph-mage
+      - backend-app
     networks:
       - app-tier

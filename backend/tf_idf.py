@@ -27,7 +27,6 @@ def get_recommendations(corpus):
     similarities = similarity_matrix[url_order_num]
     similarities = np.around(similarities, decimals=3)
     print("similarities:", similarities, "type:", type(similarities))
-    print("data type:", type(similarities[0]), "value:", similarities[0])
 
     # exclude current document
     index = np.where(similarities == 1.)

@@ -32,7 +32,11 @@ def is_valid_url(url, path):
 def first_run(url):
     global all_urls, todo_urls, documents
     all_urls, todo_urls, documents = [], [], []
+
     response, content = http.request(url)
+
+    if response.status == 404:
+        return [], [], 404
 
     joined_path = is_valid_url(url, url)
     if joined_path:
@@ -55,7 +59,7 @@ def first_run(url):
                 break
    
     #create_csv()
-    return documents, all_urls
+    return documents, all_urls, 1
 
 # TODO: trenutno ne koristimo, triba istraziti ocemo li
 def second_run(url):
