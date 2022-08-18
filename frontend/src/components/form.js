@@ -17,6 +17,8 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
     const handleSubmit = async(event) => {
         event.preventDefault()
 
+        let okRequest = true
+
         if(!isValidHttpUrl(url))  {
             alert("URL is not valid.")
             return
@@ -32,26 +34,30 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
             method: "post",
             url: "http://localhost:5000/recommendations",
             data: bodyFormData,
-        });
-        console.log("response:", response)
-        let res = response.data
-        if(res === 404){
-            alert("Page not found.")
+        }).catch(error => {
+            okRequest = false
             updateLoader(false)
             updateDisplay(false)
-            return
-        }
-        if(res === -1) {
-            alert("Nothing to recommend.")
+            if(error.response.status === 404){
+                alert("Page not found.")
+                return
+            }
+            else if(response.status === -1) {
+                alert("Nothing to recommend.")
+                updateRecs({})
+                return
+            }
+            else{
+                alert("Something went wrong.")
+                return
+            }
+        })
+        if(okRequest){
+            console.log("response:", response)        
             updateLoader(false)
-            updateDisplay(false)
-            updateRecs({})
-            return
+            updateDisplay(true)
+            updateRecs(response.data)
         }
-        updateLoader(false)
-        updateDisplay(true)
-        //console.log("form.js:", res)
-        updateRecs(res)
     }
 
     const isValidHttpUrl = (string) => {

@@ -46,7 +46,7 @@ def first_run(url):
     documents.append(text)
 
     soup = BeautifulSoup(content, features="lxml")
-    i = 0
+    # i = 0
     for link in soup.find_all('a', href=True):
         path = link.get('href')
         joined_path = is_valid_url(url, path)
@@ -54,9 +54,9 @@ def first_run(url):
             all_urls.append(joined_path)
             text = extract_text("", joined_path)
             documents.append(text)
-            i += 1
-            if i == 9:
-                break
+            """i += 1
+             if i == 9:
+                break"""
    
     #create_csv()
     return documents, all_urls, 1
@@ -100,5 +100,5 @@ def check_domain(path, url):
     else:
         return False
     
-def get_links(url):
+def get_links_and_documents(url):
     return first_run(url)

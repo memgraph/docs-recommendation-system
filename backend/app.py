@@ -1,12 +1,12 @@
-from flask import Flask, render_template, request, redirect, jsonify
-from scraper import get_links
+from json import dumps
+from flask import Flask, render_template, request, jsonify, Response, make_response
+from scraper import get_links_and_documents
 from tf_idf import get_recommendations
 from extractor import rake
 from database import populate_db, predict, memgraph, get_embeddings_as_properties
 import os
 import logging
-from flask_cors import CORS, cross_origin
-import json
+from flask_cors import CORS
 
 #memgraph = gqlalchemy.Memgraph(host="memgraph-mage", port=7687)
 
@@ -20,32 +20,35 @@ def home():
     return render_template("home.html")
 
 @app.route("/recommendations", methods=["POST"])
-def redirect_docs():
+def recommend_docs():
     url = request.form["url"]
     text = request.form["text"]
-    
-    ind = url.rfind('/')
-    url_name = url[ind+1:]
-    if url_name == "":
-        url = url[:ind]
-        ind = url.rfind('/')
-        url_name = url[ind + 1:]
 
-    documents, all_urls, status = get_links(url)
+    documents, all_urls, status = get_links_and_documents(url)
     if status == 404:
-        return "404"
+        return make_response("", status)
+
+    if not text == "": # recommend docs based on text input
+        documents.insert(0, text)
+        all_urls.insert(0, url + "/new_document")
+
+    ind = all_urls[0].rfind('/')
+    url_name = all_urls[0][ind+1:]
+    if url_name == "":
+        all_urls[0] = all_urls[0][:ind]
+        ind = all_urls[0].rfind('/')
+        url_name = all_urls[0][ind + 1:]
+
+    tf_idf_recommendations, node2vec_recommendations = [], []
 
     # tf-idf
-    tf_idf_recommendations = []
     if len(documents) > 1:
         recommendations = get_recommendations(documents)
         tf_idf_recommendations = [all_urls[i] for i in recommendations]
     else:
-        print("Only 1 or 0 documents, nothing to recommend.")
-        return "-1"
+        return make_response("", -1)
 
     # node2vec
-    node2vec_recommendations = []
     new_docs = rake(documents)
     populate_db(all_urls, new_docs)
     nodes, node_embeddings = get_embeddings_as_properties()
@@ -53,7 +56,6 @@ def redirect_docs():
 
     count = 0
     top_rec_name = []
-    top_rec = []
     for key in predicted_edges:
         if count == 3:
             break
@@ -71,17 +73,18 @@ def redirect_docs():
                 continue
             else:
                 if node._properties["name"] == i:
-                    top_rec.append(node._properties["url"])
+                    node2vec_recommendations.append(node._properties["url"])
                     break
-    print("\n\nTop three recommendations:", top_rec)
-    node2vec_recommendations = top_rec
+    
+    print("\n\nTop three recommendations:", node2vec_recommendations)
 
-    return jsonify({"tf-idf":tf_idf_recommendations, "node2vec":node2vec_recommendations})
+    recs = {"tf-idf":tf_idf_recommendations, "node2vec":node2vec_recommendations}
+    return make_response(dumps(recs), 200)
     # TODO: ako je top_rec prazan, tj count==0 onda napraviti neku funkciju koja poveze s wikipedijom?
     
     # TODO: bez redirecta, dodati opciju da redirecta na recommendation ako zeli
     # return redirect(url)
-    
+
 @app.route("/page-rank")
 def get_page_rank():
     """Call the Page rank procedure and return top 30 in descending order."""

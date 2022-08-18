@@ -39,4 +39,4 @@ def get_recommendations(corpus):
     print("top_recommendations", top_recommendations)
     print("top_similarities:", sim_arr[top_recommendations])
 
-    return top_recommendations
+    return np.flip(top_recommendations)
