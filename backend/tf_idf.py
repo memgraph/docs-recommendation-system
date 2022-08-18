@@ -3,8 +3,9 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from typing import List
 
-def find_tf_idf(corpus):
+def find_tf_idf(corpus: List[str]):
     vectorizer = TfidfVectorizer()
 
     tfidf_matrix = vectorizer.fit_transform(corpus)
@@ -19,9 +20,10 @@ def find_tf_idf(corpus):
     cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix) # TODO: vidjet jel algoritam za simetričnu matricu računa sve vrijednosti ili samo pola matrice
     print("cosine_sim:", cosine_sim)
     print("Time taken: %s seconds" % (time.time() - start))
+    
     return cosine_sim
 
-def get_recommendations(corpus):
+def get_recommendations(corpus: List[str]):
     similarity_matrix = find_tf_idf(corpus)
     url_order_num = 0
     similarities = similarity_matrix[url_order_num]

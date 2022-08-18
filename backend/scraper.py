@@ -29,7 +29,7 @@ def is_valid_url(url, path):
 
 # TODO: remove break after 10 urls
 # extract all urls from given website using BS
-def first_run(url):
+def first_run(url: str):
     global all_urls, todo_urls, documents
     all_urls, todo_urls, documents = [], [], []
 
@@ -62,7 +62,7 @@ def first_run(url):
     return documents, all_urls, 1
 
 # TODO: trenutno ne koristimo, triba istraziti ocemo li
-def second_run(url):
+def second_run(url: str):
     url_a = todo_urls.pop(0)
     response, content = http.request(url_a)
 
@@ -80,7 +80,7 @@ def second_run(url):
             documents.append(text)
 
 # TODO: triba li nam ovo?
-def create_csv():
+def create_csv() -> None:
     global counter
 
     with open(PATH + '\dataset\links.csv', 'w', encoding='utf8', newline='') as f:
@@ -91,7 +91,7 @@ def create_csv():
             thewriter.writerow([path])
 
 # provides recommendations within the same documentation              
-def check_domain(path, url):
+def check_domain(path: str, url: str):
     domain = urlparse(path).netloc
     maindomain = urlparse(url).netloc
 
@@ -99,6 +99,6 @@ def check_domain(path, url):
         return True
     else:
         return False
-    
-def get_links_and_documents(url):
+
+def get_links_and_documents(url: str):
     return first_run(url)

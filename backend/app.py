@@ -1,5 +1,6 @@
 from json import dumps
-from flask import Flask, render_template, request, jsonify, Response, make_response
+import time
+from flask import Flask, render_template, request, Response, make_response
 from scraper import get_links_and_documents
 from tf_idf import get_recommendations
 from extractor import rake
@@ -7,6 +8,7 @@ from database import populate_db, predict, memgraph, get_embeddings_as_propertie
 import os
 import logging
 from flask_cors import CORS
+from gqlalchemy import Call, Node
 
 #memgraph = gqlalchemy.Memgraph(host="memgraph-mage", port=7687)
 
@@ -25,6 +27,7 @@ def recommend_docs():
     text = request.form["text"]
 
     documents, all_urls, status = get_links_and_documents(url)
+
     if status == 404:
         return make_response("", status)
 
