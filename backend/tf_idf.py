@@ -1,9 +1,10 @@
 import time
+from typing import List
+import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from typing import List
+
 
 def find_tf_idf(corpus: List[str]):
     vectorizer = TfidfVectorizer()
@@ -13,13 +14,13 @@ def find_tf_idf(corpus: List[str]):
     dense = tfidf_matrix.todense()
     dense_list = dense.tolist()
     df = pd.DataFrame(dense_list, columns=feature_names)
-    print(df)
+    # print(df)
 
     start = time.time()
 
-    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix) # TODO: vidjet jel algoritam za simetričnu matricu računa sve vrijednosti ili samo pola matrice
-    print("cosine_sim:", cosine_sim)
-    print("Time taken: %s seconds" % (time.time() - start))
+    cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
+    # print("cosine_sim:", cosine_sim)
+    # print("Time taken: %s seconds" % (time.time() - start))
     
     return cosine_sim
 
@@ -28,17 +29,14 @@ def get_recommendations(corpus: List[str]):
     url_order_num = 0
     similarities = similarity_matrix[url_order_num]
     similarities = np.around(similarities, decimals=3)
-    print("similarities:", similarities, "type:", type(similarities))
 
     # exclude current document
     index = np.where(similarities == 1.)
     similarities[index] = -1.
-    print("similarities:", similarities, "len:", len(similarities))
 
     n = 5
     sim_arr = np.array(similarities)
     top_recommendations = np.argsort(sim_arr)[-n:]
-    print("top_recommendations", top_recommendations)
-    print("top_similarities:", sim_arr[top_recommendations])
+    # print("top_similarities:", sim_arr[top_recommendations])
 
     return np.flip(top_recommendations)

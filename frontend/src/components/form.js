@@ -52,8 +52,7 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
                 return
             }
         })
-        if(okRequest){
-            console.log("response:", response)        
+        if(okRequest){        
             updateLoader(false)
             updateDisplay(true)
             updateRecs(response.data)

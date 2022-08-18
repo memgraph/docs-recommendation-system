@@ -1,16 +1,14 @@
-from json import dumps
-import time
-from flask import Flask, render_template, request, Response, make_response
-from scraper import get_links_and_documents
-from tf_idf import get_recommendations
-from extractor import rake
-from database import populate_db, predict, memgraph, get_embeddings_as_properties
-import os
 import logging
+import os
+import time
+from json import dumps
+from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
 from gqlalchemy import Call, Node
-
-#memgraph = gqlalchemy.Memgraph(host="memgraph-mage", port=7687)
+from database import (get_embeddings_as_properties, memgraph, populate_db, predict)
+from extractor import rake
+from scraper import get_links_and_documents
+from tf_idf import get_recommendations
 
 log = logging.getLogger(__name__)
 args = None
@@ -31,16 +29,18 @@ def recommend_docs():
     if status == 404:
         return make_response("", status)
 
-    if not text == "": # recommend docs based on text input
+    # recommend docs based on text input
+    if not text == "":
         documents.insert(0, text)
         all_urls.insert(0, url + "/new_document")
 
-    ind = all_urls[0].rfind('/')
-    url_name = all_urls[0][ind+1:]
+    first_url = all_urls[0] 
+    ind = first_url.rfind('/')
+    url_name = first_url[ind+1:]
     if url_name == "":
-        all_urls[0] = all_urls[0][:ind]
-        ind = all_urls[0].rfind('/')
-        url_name = all_urls[0][ind + 1:]
+        first_url = first_url[:ind]
+        ind = first_url.rfind('/')
+        url_name = first_url[ind + 1:]
 
     tf_idf_recommendations, node2vec_recommendations = [], []
 
@@ -78,16 +78,11 @@ def recommend_docs():
                 if node._properties["name"] == i:
                     node2vec_recommendations.append(node._properties["url"])
                     break
-    
-    print("\n\nTop three recommendations:", node2vec_recommendations)
 
     recs = {"tf-idf":tf_idf_recommendations, "node2vec":node2vec_recommendations}
     return make_response(dumps(recs), 200)
-    # TODO: ako je top_rec prazan, tj count==0 onda napraviti neku funkciju koja poveze s wikipedijom?
-    
-    # TODO: bez redirecta, dodati opciju da redirecta na recommendation ako zeli
-    # return redirect(url)
 
+# TODO: pagerank in progress...
 @app.route("/page-rank")
 def get_page_rank():
     """Call the Page rank procedure and return top 30 in descending order."""

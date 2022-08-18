@@ -1,10 +1,9 @@
-from gqlalchemy import Memgraph, Match, Node
-from typing import Dict, List, Tuple, Set
-import itertools
 import gc
+import itertools
+from typing import Dict, List, Set, Tuple
 import numpy as np
+from gqlalchemy import Match, Memgraph, Node
 
-#memgraph = Memgraph(host="memgraph-mage", port=7687)
 memgraph = Memgraph()
 PRECISION_AT_K_CONST = 2 ** 8
 
@@ -38,7 +37,7 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     query = """MATCH (n) DETACH DELETE (n);"""
     memgraph.execute(query)
     
-    # create nods of urls
+    # create nodes of urls
     for url in urls:
         index = url.rfind('/')
         s = url[index+1:]

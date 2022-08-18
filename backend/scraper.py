@@ -1,10 +1,9 @@
-from bs4 import BeautifulSoup
-from urllib.parse import urljoin
-from urllib.parse import urlparse
-import httplib2
 import os
 from csv import writer
 from os.path import abspath
+from urllib.parse import urljoin, urlparse
+import httplib2
+from bs4 import BeautifulSoup
 from extractor import extract_text
 
 http = httplib2.Http()
@@ -27,7 +26,6 @@ def is_valid_url(url, path):
             return path
     return False
 
-# TODO: remove break after 10 urls
 # extract all urls from given website using BS
 def first_run(url: str):
     global all_urls, todo_urls, documents
@@ -46,7 +44,6 @@ def first_run(url: str):
     documents.append(text)
 
     soup = BeautifulSoup(content, features="lxml")
-    # i = 0
     for link in soup.find_all('a', href=True):
         path = link.get('href')
         joined_path = is_valid_url(url, path)
@@ -54,14 +51,10 @@ def first_run(url: str):
             all_urls.append(joined_path)
             text = extract_text("", joined_path)
             documents.append(text)
-            """i += 1
-             if i == 9:
-                break"""
    
     #create_csv()
-    return documents, all_urls, 1
+    return documents, all_urls, 200
 
-# TODO: trenutno ne koristimo, triba istraziti ocemo li
 def second_run(url: str):
     url_a = todo_urls.pop(0)
     response, content = http.request(url_a)
@@ -79,7 +72,6 @@ def second_run(url: str):
             text = extract_text("", joined_path)
             documents.append(text)
 
-# TODO: triba li nam ovo?
 def create_csv() -> None:
     global counter
 
