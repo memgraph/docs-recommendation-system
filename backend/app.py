@@ -81,6 +81,36 @@ def redirect_docs():
     
     # TODO: bez redirecta, dodati opciju da redirecta na recommendation ako zeli
     # return redirect(url)
+    
+@app.route("/page-rank")
+def get_page_rank():
+    """Call the Page rank procedure and return top 30 in descending order."""
+    try:
+        results = list(
+            Call("pagerank.get")
+            .yield_()
+            .with_({"node": "node", "rank": "rank"})
+            .return_({"node.name": "node_name", "rank": "rank"})
+            .order_by("rank DESC")
+            .limit(30)
+            .execute()
+        )
+        page_rank_dict = dict()
+        page_rank_list = list()
+        for result in results:
+            user_name = result["node_name"]
+            rank = float(result["rank"])
+            page_rank_dict = {"name": user_name, "rank": rank}
+            dict_copy = page_rank_dict.copy()
+            page_rank_list.append(dict_copy)
+        response = {"page_rank": page_rank_list}
+        return Response(
+            response=dumps(response), status=200, mimetype="application/json"
+        )
+    except Exception as e:
+        log.info("Fetching users' ranks using pagerank went wrong.")
+        log.info(e)
+        return ("", 500)
 
 def log_time(func):
     @wraps(func)
