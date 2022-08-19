@@ -73,8 +73,8 @@ def populate_db(urls, key_sets):
         url = urls[i]
         row = similarity_matrix[i]
         row_as_array = np.array(row)
-        n = 5
-        # 5 most similar nods in certain row
+        n = 4
+        #  most similar nods in certain row
         similar_nodes_indices = np.argpartition(row_as_array, -n)[-n:]
         
         s = names[url]

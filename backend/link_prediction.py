@@ -75,7 +75,7 @@ def link_prediction():
 
     # we need to sort predicted edges so that ones that are most likely to appear are first in list
     sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
-   
+    
     # taking only edges that we are predicting to appear, not ones that are already in graph
     sorted_predicted_edges = {k: v for k, v in sorted_predicted_edges.items() if k not in train_edges_dict}
     
@@ -83,12 +83,5 @@ def link_prediction():
     precision_scores, delta_factors = compute_precision_at_k(predicted_edges=sorted_predicted_edges,
                                                              test_edges=test_edges_dict,
                                                              max_k=PRECISION_AT_K_CONST)
-   
-    precise_edges = []
-    i = 0
-    for key in sorted_predicted_edges:
-        if precision_scores[i] > 0.0:
-            precise_edges.append(key)
-        i += 1 
     
-    return nodes, precise_edges
+    return nodes, sorted_predicted_edges

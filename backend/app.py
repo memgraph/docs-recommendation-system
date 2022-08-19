@@ -91,7 +91,7 @@ def redirect_docs():
                     top_link_rec.append(result["n_url"])
                     break
                 
-        print("\nTop three link prediction recommendations", top_link_rec)
+        print("\nTop three link predictiion recommendations", top_link_rec)
         
         # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     
