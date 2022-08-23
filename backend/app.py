@@ -2,11 +2,16 @@ import logging
 import os
 import time
 from json import dumps
+
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
 from gqlalchemy import Call, Node
-from database import (get_embeddings_as_properties, memgraph, populate_db, predict)
+from gqlalchemy.query_builders.declarative_base import Order
+
+from database import memgraph, populate_db
 from extractor import rake
+from link_prediction import link_prediction
+from node2vec import get_embeddings_as_properties, predict
 from scraper import get_links_and_documents
 from tf_idf import get_recommendations
 
@@ -14,6 +19,7 @@ log = logging.getLogger(__name__)
 args = None
 app = Flask(__name__)
 CORS(app)
+NUM_OF_RECS = 0
 
 @app.route("/")
 def home():
@@ -42,7 +48,7 @@ def recommend_docs():
         ind = first_url.rfind('/')
         url_name = first_url[ind + 1:]
 
-    tf_idf_recommendations, node2vec_recommendations = [], []
+    tf_idf_recommendations, node2vec_recommendations, link_prediction_recs = [], [], []
 
     # tf-idf
     corpus_length = len(documents)
@@ -58,30 +64,50 @@ def recommend_docs():
     nodes, node_embeddings = get_embeddings_as_properties()
     predicted_edges = predict(node_embeddings)
 
-    count = 0
+    NUM_OF_RECS = 0
     top_rec_name = []
     for key in predicted_edges:
-        if count == 3:
+        if NUM_OF_RECS == 3:
             break
         if key[0] == url_name:
             top_rec_name.append(key[1])
-            count += 1
+            NUM_OF_RECS += 1
         elif key[1] == url_name:
             top_rec_name.append(key[0])
-            count += 1
+            NUM_OF_RECS += 1
 
     for i in top_rec_name:
         for result in nodes:
-            node: Node = result["node"]
-            if not "name" in node._properties:
-                continue
-            else:
-                if node._properties["name"] == i:
-                    node2vec_recommendations.append(node._properties["url"])
+            if(result["n_name"] == i):
+                    node2vec_recommendations.append(result["n_url"])
                     break
+    
+    # link prediction
+    nodes, precise_edges = link_prediction()
 
+    NUM_OF_RECS = 0
+    top_link_name = []
+
+    for key in precise_edges:
+        if NUM_OF_RECS == 3:
+            break
+        if key[0] == url_name:
+            top_link_name.append(key[1])
+            NUM_OF_RECS += 1
+        elif key[1] == url_name:
+            top_link_name.append(key[0])
+            NUM_OF_RECS += 1
+
+    for i in top_link_name:   
+        for result in nodes:
+            if(result["n_name"] == i):
+                link_prediction_recs.append(result["n_url"])
+                break   
+                    
+    # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     recs = {"tf-idf": tf_idf_recommendations, "similarities": similarities,
-            "top_keywords": top_keywords, "node2vec": node2vec_recommendations}
+            "top_keywords": top_keywords, "node2vec": node2vec_recommendations , "link_prediction":link_prediction_recs}
+
     return make_response(dumps(recs), 200)
 
 # TODO: pagerank in progress...
@@ -92,9 +118,9 @@ def get_page_rank():
         results = list(
             Call("pagerank.get")
             .yield_()
-            .with_({"node": "node", "rank": "rank"})
-            .return_({"node.name": "node_name", "rank": "rank"})
-            .order_by("rank DESC")
+            .with_(["node", "rank"])
+            .return_([("node.name", "node_name"), "rank"])
+            .order_by(properties=("rank", Order.DESC))
             .limit(30)
             .execute()
         )

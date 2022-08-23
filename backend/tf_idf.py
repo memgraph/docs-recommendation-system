@@ -7,7 +7,6 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
 def tf_idf(corpus: List[str]):
     #start = time.time()
     vectorizer = TfidfVectorizer()
