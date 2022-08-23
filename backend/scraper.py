@@ -2,8 +2,10 @@ import os
 from csv import writer
 from os.path import abspath
 from urllib.parse import urljoin, urlparse
+
 import httplib2
 from bs4 import BeautifulSoup
+
 from extractor import extract_text
 
 http = httplib2.Http()
@@ -73,8 +75,6 @@ def second_run(url: str):
             documents.append(text)
 
 def create_csv() -> None:
-    global counter
-
     with open(PATH + '\dataset\links.csv', 'w', encoding='utf8', newline='') as f:
         thewriter = writer(f)
         header = ['All URLs:']
@@ -87,10 +87,7 @@ def check_domain(path: str, url: str):
     domain = urlparse(path).netloc
     maindomain = urlparse(url).netloc
 
-    if domain == maindomain:
-        return True
-    else:
-        return False
+    return True if domain == maindomain else False
 
 def get_links_and_documents(url: str):
     return first_run(url)

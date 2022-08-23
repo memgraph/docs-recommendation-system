@@ -1,6 +1,7 @@
 import gc
 import itertools
 from typing import Dict, List, Set, Tuple
+
 import numpy as np
 from gqlalchemy import Match, Memgraph, Node
 
@@ -11,10 +12,7 @@ PRECISION_AT_K_CONST = 2 ** 8
 def jaccard_set(set1: Set[str], set2: Set[str]) -> float:
     intersection = len(list(set(set1).intersection(set2)))
     union = (len(set1) + len(set2)) - intersection
-    if union == 0:
-        return 0
-    else:
-        return float(intersection) / union
+    return 0 if union == 0 else float(intersection) / union
 
 # creates url matrix based on jaccard's measure 
 def create_matrix(key_sets: List[Set[str]]): 

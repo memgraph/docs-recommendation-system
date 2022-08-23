@@ -2,10 +2,14 @@ import logging
 import os
 import time
 from json import dumps
+
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
 from gqlalchemy import Call, Node
-from database import (get_embeddings_as_properties, memgraph, populate_db, predict)
+from gqlalchemy.query_builders.declarative_base import Order
+
+from database import (get_embeddings_as_properties, memgraph, populate_db,
+                      predict)
 from extractor import rake
 from scraper import get_links_and_documents
 from tf_idf import get_recommendations
@@ -90,9 +94,9 @@ def get_page_rank():
         results = list(
             Call("pagerank.get")
             .yield_()
-            .with_({"node": "node", "rank": "rank"})
-            .return_({"node.name": "node_name", "rank": "rank"})
-            .order_by("rank DESC")
+            .with_(["node", "rank"])
+            .return_([("node.name", "node_name"), "rank"])
+            .order_by(properties=("rank", Order.DESC))
             .limit(30)
             .execute()
         )
