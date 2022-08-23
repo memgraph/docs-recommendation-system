@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Form } from './components/form';
 import { Header } from './components/header';
-import { Visualisation } from './components/D3';
+import { Visualisation } from './components/visuals';
 import { Recommendations } from './components/recommendations';
 import { Box, LinearProgress, Divider } from '@mui/material';
 
@@ -12,6 +12,8 @@ const App = () => {
   const [recommendations, setRecommendations] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [displayRecs, setDisplayRecs] = useState(false)
+  const [displayStats, setDisplayStats] = useState(false)
+  const [displayPagerank, setDisplayPagerank] = useState(false)    
 
   useEffect(() => { setDisplayRecs(false) }, [])
 
@@ -20,6 +22,10 @@ const App = () => {
   const updateLoader = (value) => { setIsLoading(value) }
 
   const updateDisplay = (value) => { setDisplayRecs(value) }
+
+  const showStats = (value) => { setDisplayStats(value) }
+
+  const showPagerank = (value) => { setDisplayPagerank(value) }
   
   return (
     <div className="App">
@@ -29,9 +35,9 @@ const App = () => {
         displayRecs ? 
         (
           <div className="flexbox-container" style={{ width: '90%', paddingLeft: "5%", marginTop: '15px'}}>
-            <Recommendations data={recommendations}/>
+            <Recommendations data={recommendations} updateStats={showStats} updatePagerank={showPagerank}/>
             <Divider orientation="vertical" variant="middle" flexItem />
-            <Visualisation />
+            <Visualisation data={recommendations} displayStats={displayStats} displayPagerank={displayPagerank}/>
           </div>
         ) :
         (

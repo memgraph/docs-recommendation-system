@@ -1,31 +1,44 @@
+import heapq
 import time
 from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
-def find_tf_idf(corpus: List[str]):
+def tf_idf(corpus: List[str]):
+    #start = time.time()
     vectorizer = TfidfVectorizer()
-
     tfidf_matrix = vectorizer.fit_transform(corpus)
-    feature_names = vectorizer.get_feature_names()
+    feature_names = vectorizer.get_feature_names_out()
     dense = tfidf_matrix.todense()
     dense_list = dense.tolist()
     df = pd.DataFrame(dense_list, columns=feature_names)
-    # print(df)
-
-    start = time.time()
-
     cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-    # print("cosine_sim:", cosine_sim)
+
+    #-----------------------------------------------------------------------
+
+    # get the column name of max values in every row
+    most_important_words = list(df.idxmax(axis=1))
+
+    word_frequencies = {}
+    for word in most_important_words:
+        word_frequencies[word] = word_frequencies.get(word, 0) + 1
+
+    top_ten_freqs = heapq.nlargest(10, word_frequencies, key=word_frequencies.get)
+    top_keywords = {key: (word_frequencies[key], round(word_frequencies[key]*100/len(corpus), 1)) 
+                    for key in top_ten_freqs}
+
+    print("top_keywords:", top_keywords, "\n")
+
     # print("Time taken: %s seconds" % (time.time() - start))
     
-    return cosine_sim
+    return cosine_sim, top_keywords
 
 def get_recommendations(corpus: List[str]):
-    similarity_matrix = find_tf_idf(corpus)
+    similarity_matrix, top_keywords = tf_idf(corpus)
     url_order_num = 0
     similarities = similarity_matrix[url_order_num]
     similarities = np.around(similarities, decimals=3)
@@ -37,6 +50,7 @@ def get_recommendations(corpus: List[str]):
     n = 5
     sim_arr = np.array(similarities)
     top_recommendations = np.argsort(sim_arr)[-n:]
-    # print("top_similarities:", sim_arr[top_recommendations])
+    similarities = list(sim_arr[top_recommendations])
+    similarities.reverse()
 
-    return np.flip(top_recommendations)
+    return np.flip(top_recommendations), similarities, top_keywords

@@ -38,19 +38,20 @@ def first_run(url: str):
 
     joined_path = is_valid_url(url, url)
     if joined_path:
-        all_urls.append(joined_path)
-
-    text = extract_text(content, "")
-    documents.append(text)
+        text = extract_text(content, "")
+        if text:
+            documents.append(text)
+            all_urls.append(joined_path)
 
     soup = BeautifulSoup(content, features="lxml")
     for link in soup.find_all('a', href=True):
         path = link.get('href')
         joined_path = is_valid_url(url, path)
         if joined_path:
-            all_urls.append(joined_path)
             text = extract_text("", joined_path)
-            documents.append(text)
+            if text:
+                documents.append(text)
+                all_urls.append(joined_path)
    
     #create_csv()
     return documents, all_urls, 200

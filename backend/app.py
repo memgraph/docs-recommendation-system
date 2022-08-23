@@ -45,8 +45,9 @@ def recommend_docs():
     tf_idf_recommendations, node2vec_recommendations = [], []
 
     # tf-idf
-    if len(documents) > 1:
-        recommendations = get_recommendations(documents)
+    corpus_length = len(documents)
+    if corpus_length > 1:
+        recommendations, similarities, top_keywords = get_recommendations(documents)
         tf_idf_recommendations = [all_urls[i] for i in recommendations]
     else:
         return make_response("", -1)
@@ -79,7 +80,8 @@ def recommend_docs():
                     node2vec_recommendations.append(node._properties["url"])
                     break
 
-    recs = {"tf-idf":tf_idf_recommendations, "node2vec":node2vec_recommendations}
+    recs = {"tf-idf": tf_idf_recommendations, "similarities": similarities,
+            "top_keywords": top_keywords, "node2vec": node2vec_recommendations}
     return make_response(dumps(recs), 200)
 
 # TODO: pagerank in progress...
