@@ -35,9 +35,10 @@ class Scraper:
         path = link.get('href')
         joined_path = self.is_valid_url(self.g_url, path)
         if joined_path:
-            self.all_urls.append(joined_path)
             text = extract_text("", joined_path)
-            self.documents.append(text)
+            if text:
+                self.all_urls.append(joined_path)
+                self.documents.append(text)
                    
     # extract all urls from given website using BS
     def first_run(self, url):
@@ -46,15 +47,15 @@ class Scraper:
         response, content = self.http.request(url)
         
         if response.status == 404:
-        return [], [], 404
+            return [], [], 404
         
         joined_path = self.is_valid_url(url, url)
         if joined_path:
-            self.all_urls.append(joined_path)
-
-        text = extract_text(content, "")
-        self.documents.append(text)
-        
+            text = extract_text(content, "")
+            if text:
+                self.all_urls.append(joined_path)
+                self.documents.append(text)
+            
         soup = BeautifulSoup(content, features="lxml")
 
         with ThreadPool(20) as pool:
@@ -65,7 +66,7 @@ class Scraper:
 
     # TODO: currently not used but still a possibility 
     def second_run(self, url):
-        url_a = todo_urls.pop(0)
+        url_a = self.todo_urls.pop(0)
         response, content = self.http.request(url_a)
 
         text = extract_text(content, "")
@@ -97,6 +98,6 @@ class Scraper:
 
         return True if domain == maindomain else False
     
-def get_links(url:str):
+def get_links_and_documents(url:str):
     scraper = Scraper()
     return scraper.first_run(url)

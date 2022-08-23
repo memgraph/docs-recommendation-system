@@ -8,8 +8,7 @@ from flask_cors import CORS
 from gqlalchemy import Call, Node
 from gqlalchemy.query_builders.declarative_base import Order
 
-from database import (get_embeddings_as_properties, memgraph, populate_db,
-                      predict)
+from database import memgraph, populate_db
 from extractor import rake
 from link_prediction import link_prediction
 from node2vec import get_embeddings_as_properties, predict
@@ -52,8 +51,9 @@ def recommend_docs():
     tf_idf_recommendations, node2vec_recommendations, link_prediction_recs = [], [], []
 
     # tf-idf
-    if len(documents) > 1:
-        recommendations = get_recommendations(documents)
+    corpus_length = len(documents)
+    if corpus_length > 1:
+        recommendations, similarities, top_keywords = get_recommendations(documents)
         tf_idf_recommendations = [all_urls[i] for i in recommendations]
     else:
         return make_response("", -1)
@@ -105,8 +105,9 @@ def recommend_docs():
                 break   
                     
     # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
+    recs = {"tf-idf": tf_idf_recommendations, "similarities": similarities,
+            "top_keywords": top_keywords, "node2vec": node2vec_recommendations , "link_prediction":link_prediction_recs}
 
-    recs = {"tf-idf":tf_idf_recommendations, "node2vec":node2vec_recommendations, "link_prediction":link_prediction_recs}
     return make_response(dumps(recs), 200)
 
 # TODO: pagerank in progress...
