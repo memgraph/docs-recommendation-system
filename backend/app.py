@@ -3,23 +3,21 @@ import os
 import time
 from json import dumps
 
+import nltk
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
-from gqlalchemy import Call, Node
+from gqlalchemy import Call
 from gqlalchemy.query_builders.declarative_base import Order
 
-from database import memgraph, populate_db
-from extractor import rake
-from link_prediction import link_prediction
-from node2vec import get_embeddings_as_properties, predict
+from controller import Controller
+from database import memgraph
 from scraper import get_links_and_documents
-from tf_idf import get_recommendations
 
 log = logging.getLogger(__name__)
 args = None
 app = Flask(__name__)
 CORS(app)
-NUM_OF_RECS = 0
+controller = Controller()
 
 @app.route("/")
 def home():
@@ -36,7 +34,7 @@ def recommend_docs():
         return make_response("", status)
 
     # recommend docs based on text input
-    if not text == "":
+    if text:
         documents.insert(0, text)
         all_urls.insert(0, url + "/new_document")
 
@@ -48,65 +46,23 @@ def recommend_docs():
         ind = first_url.rfind('/')
         url_name = first_url[ind + 1:]
 
-    tf_idf_recommendations, node2vec_recommendations, link_prediction_recs = [], [], []
-
     # tf-idf
-    corpus_length = len(documents)
-    if corpus_length > 1:
-        recommendations, similarities, top_keywords = get_recommendations(documents)
-        tf_idf_recommendations = [all_urls[i] for i in recommendations]
-    else:
+    res = controller.tf_idf(documents, all_urls)
+    if not res:
         return make_response("", -1)
 
     # node2vec
-    new_docs = rake(documents)
-    populate_db(all_urls, new_docs)
-    nodes, node_embeddings = get_embeddings_as_properties()
-    predicted_edges = predict(node_embeddings)
-
-    NUM_OF_RECS = 0
-    top_rec_name = []
-    for key in predicted_edges:
-        if NUM_OF_RECS == 3:
-            break
-        if key[0] == url_name:
-            top_rec_name.append(key[1])
-            NUM_OF_RECS += 1
-        elif key[1] == url_name:
-            top_rec_name.append(key[0])
-            NUM_OF_RECS += 1
-
-    for i in top_rec_name:
-        for result in nodes:
-            if(result["n_name"] == i):
-                    node2vec_recommendations.append(result["n_url"])
-                    break
+    controller.node2vec(documents, all_urls, url_name)
+    #TODO: add exceptions?
     
     # link prediction
-    nodes, precise_edges = link_prediction()
-
-    NUM_OF_RECS = 0
-    top_link_name = []
-
-    for key in precise_edges:
-        if NUM_OF_RECS == 3:
-            break
-        if key[0] == url_name:
-            top_link_name.append(key[1])
-            NUM_OF_RECS += 1
-        elif key[1] == url_name:
-            top_link_name.append(key[0])
-            NUM_OF_RECS += 1
-
-    for i in top_link_name:   
-        for result in nodes:
-            if(result["n_name"] == i):
-                link_prediction_recs.append(result["n_url"])
-                break   
+    controller.link_prediction(url_name)
+    #TODO: add exceptions? 
                     
-    # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
-    recs = {"tf-idf": tf_idf_recommendations, "similarities": similarities,
-            "top_keywords": top_keywords, "node2vec": node2vec_recommendations , "link_prediction":link_prediction_recs}
+    #TODO: if there are no top recommendations, redirect to certain docs/wiki page?
+    recs = {"tf-idf": controller.tf_idf_recs, "similarities": controller.similarities,
+            "top_keywords": controller.top_keywords, "node2vec": controller.node2vec_recs, 
+            "link_prediction": controller.link_prediction_recs}
 
     return make_response(dumps(recs), 200)
 
@@ -163,8 +119,15 @@ def connect_to_memgraph():
         if memgraph._get_cached_connection().is_active():
             connection_established = True
 
+def download_nltk_packages():
+    nltk.download('stopwords')
+    nltk.download('wordnet')
+    nltk.download('omw-1.4')
+    nltk.download('punkt')
+
 if __name__ == '__main__':
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         #init_log()
         connect_to_memgraph()
+        download_nltk_packages()
     app.run(debug=True, host="0.0.0.0", port=5000)

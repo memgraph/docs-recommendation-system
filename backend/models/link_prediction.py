@@ -1,12 +1,11 @@
 import time
 from string import Template
 from typing import Dict, List, Tuple
-
+from database import WebPage, memgraph
 from gqlalchemy import Match, Memgraph, Node
 from sklearn.model_selection import train_test_split
 
-from database import WebPage, memgraph
-from node2vec import (PRECISION_AT_K_CONST, calculate_adjacency_matrix,
+from .node2vec import (PRECISION_AT_K_CONST, calculate_adjacency_matrix,
                       get_embeddings_as_properties)
 
 
@@ -21,7 +20,7 @@ def get_all_edges() -> List[Tuple[Node, Node]]:
     return [(result["node_a"], result["node_b"]) for result in results]
 
 def split_edges_train_test(edges: List[Tuple[Node, Node]], test_size: float = 0.2) -> (
-        List[Tuple[Node, Node]], List[Tuple[Node, Node]]):
+        Tuple[List[Tuple[Node, Node]], List[Tuple[Node, Node]]]):
     edges_train, edges_test = train_test_split(edges, test_size=test_size, random_state=int(time.time()))
 
     return edges_train, edges_test
