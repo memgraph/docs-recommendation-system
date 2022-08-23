@@ -3,9 +3,7 @@ import itertools
 from typing import Dict, List, Tuple
 
 import numpy as np
-from gqlalchemy import Match, Memgraph, Node
-
-from database import WebPage
+from gqlalchemy import Match
 
 PRECISION_AT_K_CONST = 2 ** 8
 

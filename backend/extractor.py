@@ -8,10 +8,6 @@ from rake_nltk import Rake
 
 # extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
 def extract_text(content, url: str) -> str:
-
-    nltk.download('stopwords')
-    nltk.download('wordnet')
-    nltk.download('omw-1.4')
     if url:
         response = requests.get(url)
         paragraphs = justext.justext(response.content, justext.get_stoplist("English"))
@@ -24,10 +20,8 @@ def extract_text(content, url: str) -> str:
     text = ""
     for paragraph in paragraphs:
         if not paragraph.is_boilerplate:
-            paragraph = paragraph.text
-            paragraph = paragraph.lower()
-            paragraph = paragraph.split()
-            paragraph = [lemmatizer.lemmatize(word) for word in paragraph if not word in set(stopwords) and not word.isnumeric()]
+            paragraph = paragraph.text.lower().split()
+            paragraph = [lemmatizer.lemmatize(word) for word in paragraph if not (word in set(stopwords) or word.isnumeric())]
             if len(paragraph):
                 paragraph = ' '.join(paragraph)
                 text += paragraph + " "
@@ -36,8 +30,6 @@ def extract_text(content, url: str) -> str:
 
 # extract keywords from given text using rake_nltk
 def rake(documents: List[str]) -> List[Set[str]]:
-    nltk.download('stopwords')
-    nltk.download('punkt')
     new_docs = []
     r = Rake()
     for text in documents:

@@ -7,6 +7,7 @@ export const Recommendations = ({ data, updateStats, updatePagerank }) => {
 
     const tf_idfItems = data["tf-idf"] ? data["tf-idf"] : []
     const node2vecItems = data["node2vec"] ? data["node2vec"] : []
+    const link_predictionsItems = data["link_prediction"] ? data["link_prediction"] : []
 
     const getPageName = (link) => {
         const parts = link.split("/")
@@ -66,8 +67,8 @@ export const Recommendations = ({ data, updateStats, updatePagerank }) => {
                         <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }}>
                             Link prediction recommendations
                         </ListSubheader>}>
-                    { node2vecItems.map((item) => <ListItem key={item}><Link href={item} underline="hover" target="_blank" rel="noopener noreferrer">
-                        item
+                    { link_predictionsItems.map((item) => <ListItem key={item}><Link href={item} underline="hover" target="_blank" rel="noopener noreferrer">
+                        {getPageName(item)}
                         </Link></ListItem >)}
                 </List>
                 <Box>
