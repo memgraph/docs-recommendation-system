@@ -3,15 +3,24 @@ import itertools
 from typing import Dict, List, Set, Tuple
 
 import numpy as np
-from gqlalchemy import Match, Memgraph, Node
+from gqlalchemy import Match, Memgraph, Node, Create, Field, Relationship
 
 memgraph = Memgraph()
-PRECISION_AT_K_CONST = 2 ** 8
+names = {}
+NUM_OF_CONNECTIONS = 4
+
+class WebPage(Node):
+    url: str = Field(index=True, exist=True, unique=True, db=memgraph)
+    name: str = Field(index=True, exist=True, unique=True, db=memgraph)
+
+class SimilarTo(Relationship, type="SIMILAR_TO"):
+    pass
 
 # jaccard's measure between two sets of keywords
 def jaccard_set(set1: Set[str], set2: Set[str]) -> float:
     intersection = len(list(set(set1).intersection(set2)))
     union = (len(set1) + len(set2)) - intersection
+
     return 0 if union == 0 else float(intersection) / union
 
 # creates url matrix based on jaccard's measure 
@@ -22,105 +31,73 @@ def create_matrix(key_sets: List[Set[str]]):
     
     for i in range(length):
         for j in range(length):
-            if i == j:
-                A[i][j] = 0
-            else:
-                A[i][j] = jaccard_set(key_sets[i], key_sets[j])
+            A[i][j] = 0 if i == j else jaccard_set(key_sets[i], key_sets[j])
     return A
+
+def find2nd(string , ch) :
+    s = string[::-1]
+    occur = 0;
+ 
+    for i in range(len(s)) :
+        if (s[i] == ch) :
+            occur += 1;
+ 
+        if (occur == 2) :
+            return len(s)-i-1;
+    
+    return -1;
+
+def getName(string):
+    index = string.rfind('/')
+    name = string[index+1:]
+    
+    for key in names:
+        if names[key] == name:
+            index = find2nd(string, '/')
+            name = string[index+1:]
+    return name
 
 # import data into Memgraph db
 def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     
-    similarity_matrix = create_matrix(key_sets)
     query = """MATCH (n) DETACH DELETE (n);"""
     memgraph.execute(query)
     
     # create nodes of urls
     for url in urls:
-        index = url.rfind('/')
-        s = url[index+1:]
-        query = """CREATE (n:WebPage) SET n.name = '{str}',  n.url = '{url}';""".format(url=url, str=s)
-        memgraph.execute(query)
-
+        s = getName(url)
+        names[url] = s
+        WebPage(name=s, url=url).save(memgraph)
+        
+    similarity_matrix = create_matrix(key_sets)
+    
     for i in range(len(urls)):
         similar_nodes = []
         url = urls[i]
         row = similarity_matrix[i]
         row_as_array = np.array(row)
-        n = 5
-        # 5 most similar nods in certain row
-        similar_nodes_indices = np.argpartition(row_as_array, -n)[-n:]
         
+        # most similar nodes in certain row
+        similar_nodes_indices = np.argpartition(row_as_array, -NUM_OF_CONNECTIONS)[-NUM_OF_CONNECTIONS:]
+        
+        s = names[url]
+        s_node = WebPage(url=url, name=s).load(db=memgraph)
+       
         for index in similar_nodes_indices:
             if index:
                 similar_nodes.append(urls[index])
         
         # create realtionships
         for similar_node in similar_nodes:
+            e = names[similar_node]
+            e_node = WebPage(url=similar_node, name=e).load(db=memgraph)
             
-            subquery1 = "'{url}'".format(url=url)
-            subquery2 = "'{sim_node}'".format(sim_node=similar_node)
             if url != similar_node:
-                query = "MERGE (n {url:" + subquery1 + "}) MERGE (m {url:" + subquery2 + "})" + \
-                        "MERGE (n)-[r:SIMILAR_TO]-(m)"
-                memgraph.execute(query)
+                similar_rel = SimilarTo(
+                    _start_node_id = s_node._id,
+                    _end_node_id = e_node._id
+                ).save(memgraph)
                 
-    # embeddings
+    # embeddings 
     query = """CALL node2vec.set_embeddings(False, 2.0, 0.5, 4, 5, 2) YIELD *;"""
     memgraph.execute(query)
-                 
-# exports "embedding" property from all nodes in Memgraph db    
-def get_embeddings_as_properties():
-    embeddings: Dict[str, List[float]] = {}
-    
-    results = list (
-        Match() 
-        .node(variable="node") 
-        .return_() 
-        .execute())
-
-    for result in results:
-        node: Node = result["node"]
-        if not "embedding" in node._properties:
-            continue
-        embeddings[node._properties["name"]] = node._properties["embedding"]
-    
-    return results, embeddings
-
-# calculates matrix based on embedding values and cosine similarity
-def calculate_adjacency_matrix(embeddings: Dict[str, List[float]], threshold=0.0) -> Dict[Tuple[str, str], float]:
-    
-    def get_edge_weight(i, j) -> float:
-        return np.dot(embeddings[i], embeddings[j])
-
-    nodes = list(embeddings.keys())
-    nodes = sorted(nodes)
-    adj_mtx_r = {}
-    cnt = 0
-    for pair in itertools.combinations(nodes, 2):
-    
-        if cnt % 1000000 == 0:
-            adj_mtx_r = {k: v for k, v in sorted(adj_mtx_r.items(), key=lambda item: -1 * item[1])}
-            adj_mtx_r = {k: adj_mtx_r[k] for k in list(adj_mtx_r)[:3*PRECISION_AT_K_CONST]}
-            gc.collect()
-
-        """if cnt % 10000 == 0:
-            print(cnt)"""
-
-        weight = get_edge_weight(pair[0], pair[1])
-        if weight <= threshold:
-            continue
-        cnt += 1
-        adj_mtx_r[(pair[0], pair[1])] = get_edge_weight(pair[0], pair[1])
-
-    return adj_mtx_r
-
-# we need to sort predicted edges so that ones that are most likely to appear are first in list
-def predict(embeddings: Dict[str, List[float]]) -> Dict[Tuple[str, str], float]:
-    adj_matrix = calculate_adjacency_matrix(embeddings=embeddings, threshold=0.0)
-    
-    predicted_edge_list = adj_matrix
-    sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
-   
-    return sorted_predicted_edges
-        
