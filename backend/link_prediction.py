@@ -1,8 +1,10 @@
 import time
 from string import Template
 from typing import Dict, List, Tuple
+
 from gqlalchemy import Match, Memgraph, Node
 from sklearn.model_selection import train_test_split
+
 from database import WebPage, memgraph
 from node2vec import (PRECISION_AT_K_CONST, calculate_adjacency_matrix,
                       get_embeddings_as_properties)
@@ -10,9 +12,9 @@ from node2vec import (PRECISION_AT_K_CONST, calculate_adjacency_matrix,
 
 def get_all_edges() -> List[Tuple[Node, Node]]:
     results = Match() \
-        .node("WebPage", variable="node_a") \
-        .to("SIMILAR_TO", variable="edge") \
-        .node("WebPage", variable="node_b") \
+        .node(labels="WebPage", variable="node_a") \
+        .to(relationship_type="SIMILAR_TO", variable="edge") \
+        .node(labels="WebPage", variable="node_b") \
         .return_() \
         .execute()
         
@@ -30,7 +32,7 @@ def remove_edges(edges: List[Tuple[Node, Node]]) -> None:
                 .node(labels="WebPage", name = edge[0].name) \
                 .to(relationship_type="SIMILAR_TO", variable="f") \
                 .node(labels="WebPage", name = edge[1].name) \
-                .delete(variable_expressions="f") \
+                .delete("f") \
                 .execute() 
                 
 def compute_precision_at_k(predicted_edges: Dict[Tuple[str, str], float],
@@ -48,6 +50,7 @@ def compute_precision_at_k(predicted_edges: Dict[Tuple[str, str], float],
             delta_factors.append(1.0)
         else:
             delta_factors.append(0.0)
+            
         precision_scores.append(1.0 * correct_edge / (count + 1))  # (number of correct guesses) / (number of attempts)
         count += 1
 

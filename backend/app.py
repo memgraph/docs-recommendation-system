@@ -1,17 +1,22 @@
 import logging
 import os
+import time
+from json import dumps
+
 import validators
 from flask import Flask, redirect, render_template, request
+
 from database import memgraph, populate_db
 from extractor import rake
+from link_prediction import link_prediction
 from node2vec import get_embeddings_as_properties, predict
 from scraper import get_links
 from tf_idf import get_recommendations
-from link_prediction import link_prediction
 
 log = logging.getLogger(__name__)
 args = None
 app = Flask(__name__)
+NUM_OF_RECS = 0
 
 @app.route("/")
 def home():
@@ -46,19 +51,19 @@ def redirect_docs():
         nodes, node_embeddings = get_embeddings_as_properties()
         predicted_edges = predict(node_embeddings)
         
-        count = 0
+        NUM_OF_RECS = 0
         top_rec_name = []
         top_rec = []
         
         for key in predicted_edges:
-            if count == 3:
+            if NUM_OF_RECS == 3:
                 break
             if key[0] == url_name:
                 top_rec_name.append(key[1])
-                count += 1
+                NUM_OF_RECS += 1
             elif key[1] == url_name:
                 top_rec_name.append(key[0])
-                count += 1
+                NUM_OF_RECS += 1
              
         for i in top_rec_name:   
             for result in nodes:
@@ -71,19 +76,19 @@ def redirect_docs():
         # link prediction
         nodes, precise_edges = link_prediction()
         
-        count = 0
+        NUM_OF_RECS = 0
         top_link_name = []
         top_link_rec = []
         
         for key in precise_edges:
-            if count == 3:
+            if NUM_OF_RECS == 3:
                 break
             if key[0] == url_name:
                 top_link_name.append(key[1])
-                count += 1
+                NUM_OF_RECS += 1
             elif key[1] == url_name:
                 top_link_name.append(key[0])
-                count += 1
+                NUM_OF_RECS += 1
              
         for i in top_link_name:   
             for result in nodes:
@@ -91,7 +96,7 @@ def redirect_docs():
                     top_link_rec.append(result["n_url"])
                     break
                 
-        print("\nTop three link predictiion recommendations", top_link_rec)
+        print("\nTop three link prediction recommendations", top_link_rec)
         
         # TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     
