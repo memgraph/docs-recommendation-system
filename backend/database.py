@@ -1,9 +1,11 @@
 from typing import List
+
 import numpy as np
-from gqlalchemy import Field, Match, Memgraph, Node, Relationship, Create
+from gqlalchemy import Create, Field, Match, Memgraph, Node, Relationship
 
 memgraph = Memgraph()
 names = {}
+NUM_OF_CONNECTIONS = 4
 
 class WebPage(Node):
     url: str = Field(index=True, exist=True, unique=True, db=memgraph)
@@ -60,7 +62,7 @@ def populate_db(urls, key_sets):
     query = """MATCH (n) DETACH DELETE (n);"""
     memgraph.execute(query)
     
-    # create nods of urls
+    # create nodes of urls
     for url in urls:
         s = getName(url)
         names[url] = s
@@ -73,9 +75,9 @@ def populate_db(urls, key_sets):
         url = urls[i]
         row = similarity_matrix[i]
         row_as_array = np.array(row)
-        n = 5
-        # 5 most similar nods in certain row
-        similar_nodes_indices = np.argpartition(row_as_array, -n)[-n:]
+        
+        # most similar nodes in certain row
+        similar_nodes_indices = np.argpartition(row_as_array, -NUM_OF_CONNECTIONS)[-NUM_OF_CONNECTIONS:]
         
         s = names[url]
         s_node = WebPage(url=url, name=s).load(db=memgraph)

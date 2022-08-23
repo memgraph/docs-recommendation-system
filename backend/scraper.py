@@ -3,8 +3,10 @@ from csv import writer
 from multiprocessing.pool import ThreadPool
 from os.path import abspath
 from urllib.parse import urljoin, urlparse
+
 import httplib2
 from bs4 import BeautifulSoup
+
 from extractor import extract_text
 
 class Scraper:
