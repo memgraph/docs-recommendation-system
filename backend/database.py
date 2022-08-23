@@ -1,7 +1,9 @@
-from typing import List
+import gc
+import itertools
+from typing import Dict, List, Set, Tuple
 
 import numpy as np
-from gqlalchemy import Create, Field, Match, Memgraph, Node, Relationship
+from gqlalchemy import Match, Memgraph, Node, Create, Field, Relationship
 
 memgraph = Memgraph()
 names = {}
@@ -15,15 +17,14 @@ class SimilarTo(Relationship, type="SIMILAR_TO"):
     pass
 
 # jaccard's measure between two sets of keywords
-def jaccard_set(set1, set2):
-    
+def jaccard_set(set1: Set[str], set2: Set[str]) -> float:
     intersection = len(list(set(set1).intersection(set2)))
     union = (len(set1) + len(set2)) - intersection
-    
+
     return 0 if union == 0 else float(intersection) / union
 
 # creates url matrix based on jaccard's measure 
-def create_matrix(key_sets): 
+def create_matrix(key_sets: List[Set[str]]): 
     
     length = len(key_sets)
     A = np.empty((length, length))
@@ -57,7 +58,7 @@ def getName(string):
     return name
 
 # import data into Memgraph db
-def populate_db(urls, key_sets):
+def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     
     query = """MATCH (n) DETACH DELETE (n);"""
     memgraph.execute(query)

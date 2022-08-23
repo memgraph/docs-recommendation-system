@@ -6,7 +6,7 @@ import requests
 from rake_nltk import Rake
 
 # extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
-def extract_text(content, url):
+def extract_text(content, url: str) -> str:
     if url:
         response = requests.get(url)
         paragraphs = justext.justext(response.content, justext.get_stoplist("English"))
@@ -21,7 +21,7 @@ def extract_text(content, url):
     return text
 
 # extract keywords from given text using rake_nltk
-def rake(documents):
+def rake(documents: List[str]) -> List[Set[str]]:
     nltk.download('stopwords')
     nltk.download('punkt')
     new_docs = []

@@ -38,12 +38,15 @@ class Scraper:
             self.all_urls.append(joined_path)
             text = extract_text("", joined_path)
             self.documents.append(text)
-                    
+                   
     # extract all urls from given website using BS
     def first_run(self, url):
         self.all_urls, self.documents = [], []
         self.g_url = url
         response, content = self.http.request(url)
+        
+        if response.status == 404:
+        return [], [], 404
         
         joined_path = self.is_valid_url(url, url)
         if joined_path:
@@ -58,7 +61,7 @@ class Scraper:
             pool.map(self.scrape, soup.find_all('a', href=True))
             
         #self.create_csv()
-        return self.documents, self.all_urls
+        return self.documents, self.all_urls, 200
 
     # TODO: currently not used but still a possibility 
     def second_run(self, url):
@@ -79,7 +82,7 @@ class Scraper:
                 self.documents.append(text)
 
     # TODO: currently not used but still a possibility
-    def create_csv(self):
+    def create_csv(self) -> None:
         with open(self.PATH + '\dataset\links.csv', 'w', encoding='utf8', newline='') as f:
             thewriter = writer(f)
             header = ['All URLs:']
@@ -87,16 +90,13 @@ class Scraper:
             for path in self.all_urls:
                 thewriter.writerow([path])
 
-    # provides recommendations within the same documentation              
-    def check_domain(self, path, url):
+    # provides recommendations within the same documentation
+    def check_domain(self, path: str, url:str):
         domain = urlparse(path).netloc
         maindomain = urlparse(url).netloc
 
-        if domain == maindomain:
-            return True
-        else:
-            return False
+        return True if domain == maindomain else False
     
-def get_links(url):
+def get_links(url:str):
     scraper = Scraper()
     return scraper.first_run(url)

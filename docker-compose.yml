@@ -5,7 +5,6 @@ networks:
     driver: bridge
     
 services:
-
   memgraph-mage:
     build: ./memgraph
     ports:
@@ -21,7 +20,7 @@ services:
     networks:
       - app-tier
 
-  docs-app:
+  backend-app:
     build: ./backend
     volumes:
       - ./backend:/app
@@ -32,5 +31,21 @@ services:
       MG_PORT: 7687
     depends_on:
       - memgraph-mage
+    networks:
+      - app-tier
+
+  frontend-app:
+    build: ./frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      MG_HOST: memgraph-mage
+      MG_PORT: 7687
+      WATCHPACK_POLLING: true
+    depends_on:
+      - backend-app
     networks:
       - app-tier
