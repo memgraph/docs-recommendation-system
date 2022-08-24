@@ -56,5 +56,4 @@ def predict(embeddings: Dict[str, List[float]]):
     predicted_edge_list = adj_matrix
     sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
     
-    print("\ntype: ", type(sorted_predicted_edges))
     return sorted_predicted_edges

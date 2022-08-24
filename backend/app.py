@@ -6,7 +6,7 @@ from json import dumps
 import nltk
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
-from gqlalchemy import Call
+from gqlalchemy import Call, Match, Node
 from gqlalchemy.query_builders.declarative_base import Order
 
 from controller import Controller
@@ -65,6 +65,59 @@ def recommend_docs():
             "link_prediction": controller.link_prediction_recs}
 
     return make_response(dumps(recs), 200)
+
+@app.route("/webpage/<url>")
+def get_webpage(url):
+    """Get info about web page whose url is <url>."""
+    
+    try:
+        results = Match() \
+            .node(labels="WebPage", variable="node_a") \
+            .to(relationship_type="SIMILAR_TO", variable="edge") \
+            .node(labels="WebPage", variable="node_b") \
+            .return_() \
+            .execute()
+            
+        links_set = set()
+        nodes_set = set()    
+            
+        for result in results:
+            node: Node = result["node_a"]
+            
+            if node._properties["url"] == url:
+                source_name = node._properties["name"]
+                source_url = node._properties["url"]
+                source_label = "WebPage"
+
+                node2: Node = result["node_b"]
+                target_name = node2._properties["name"]
+                target_url = node2._properties["url"]
+                target_label = "WebPage"
+                
+                nodes_set.add((source_name, source_url, source_label))
+                nodes_set.add((target_name, target_url, target_label))
+
+                if (source_name, target_name) not in links_set and (
+                    target_name, source_name,
+                ) not in links_set:
+                    links_set.add((source_name, target_name))
+            
+        nodes = [
+            {"name": node_name, "url": node_url, "label": node_label, }
+            for node_name, node_url, node_label in nodes_set
+        ]
+        links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
+        
+        response = {"nodes": nodes, "links": links}
+        
+        """return Response(
+            response=dumps(response), status=200, mimetype="application/json"
+        )"""
+        
+    except Exception as e:
+        log.info("Fetching streamer by name went wrong.")
+        log.info(e)
+        return ("", 500)
 
 # TODO: pagerank in progress...
 @app.route("/page-rank")
