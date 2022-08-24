@@ -3,7 +3,7 @@ import itertools
 from typing import Dict, List, Set, Tuple
 
 import numpy as np
-from gqlalchemy import Match, Memgraph, Node, Create, Field, Relationship
+from gqlalchemy import Create, Field, Match, Memgraph, Node, Relationship
 
 memgraph = Memgraph()
 names = {}
@@ -41,7 +41,7 @@ def find2nd(string , ch) :
     for i in range(len(s)) :
         if (s[i] == ch) :
             occur += 1;
- 
+            
         if (occur == 2) :
             return len(s)-i-1;
     

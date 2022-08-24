@@ -1,12 +1,13 @@
 import time
 from string import Template
 from typing import Dict, List, Tuple
+
 from database import WebPage, memgraph
 from gqlalchemy import Match, Memgraph, Node
 from sklearn.model_selection import train_test_split
 
 from .node2vec import (PRECISION_AT_K_CONST, calculate_adjacency_matrix,
-                      get_embeddings_as_properties)
+                       get_embeddings_as_properties)
 
 
 def get_all_edges() -> List[Tuple[Node, Node]]:

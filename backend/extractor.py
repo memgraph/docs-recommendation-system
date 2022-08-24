@@ -29,6 +29,7 @@ def extract_text(content, url: str) -> str:
     return text
 
 # extract keywords from given text using rake_nltk
+# TODO: currently not used but still a possibility
 def rake(documents: List[str]) -> List[Set[str]]:
     new_docs = []
     r = Rake()

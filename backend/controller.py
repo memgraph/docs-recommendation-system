@@ -1,11 +1,12 @@
 from typing import List
+
 import numpy as np
 
 from database import populate_db
 from extractor import rake
 from models.link_prediction import link_prediction
 from models.node2vec import get_embeddings_as_properties, predict
-from models.tf_idf import get_recommendations
+from models.tf_idf import get_recommendations, tf_idf_keywords
 
 
 class Controller:    
@@ -25,7 +26,7 @@ class Controller:
         return False
 
     def node2vec(self, documents:List[str], all_urls:List[str], url_name:str) -> None:
-        new_docs = rake(documents)
+        new_docs = tf_idf_keywords(documents)
         populate_db(all_urls, new_docs)
         nodes, node_embeddings = get_embeddings_as_properties()
         predicted_edges = predict(node_embeddings)

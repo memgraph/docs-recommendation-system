@@ -1,11 +1,52 @@
 import heapq
 import time
-from typing import List
+from typing import List, Set
 
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+
+def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
+    vectorizer = TfidfVectorizer()
+    vectorizer.fit_transform(corpus)
+    feature_names = vectorizer.get_feature_names_out()
+    
+    new_doc = []
+    for doc in corpus:
+        tf_idf_vector=vectorizer.transform([doc])
+        
+        # sort the tf-idf vectors by descending order of scores
+        sorted_items=sort_coo(tf_idf_vector.tocoo())
+        
+        # extract only the top 30
+        keywords=extract_topn_from_vector(feature_names,sorted_items,30)
+        new_doc.append(set(keywords))
+        
+    return new_doc
+
+
+def sort_coo(coo_matrix):
+    tuples = zip(coo_matrix.col, coo_matrix.data)
+    return sorted(tuples, key=lambda x: (x[1], x[0]), reverse=True)
+
+def extract_topn_from_vector(feature_names, sorted_items, topn=30):
+    """get the featuure names and tf-idf score of top n items"""
+    
+    sorted_items = sorted_items[:topn]
+    score_vals = []
+    feature_vals = []
+    
+    # word index and corresponding tf-idf score
+    for idx, score in sorted_items:
+        score_vals.append(round(score, 3))
+        feature_vals.append(feature_names[idx])
+        
+    results= {}
+    for idx in range(len(feature_vals)):
+        results[feature_vals[idx]]=score_vals[idx]
+    
+    return results
 
 def tf_idf(corpus: List[str]):
     #start = time.time()
@@ -30,7 +71,7 @@ def tf_idf(corpus: List[str]):
     top_keywords = {key: (word_frequencies[key], round(word_frequencies[key]*100/len(corpus), 1)) 
                     for key in top_ten_freqs}
 
-    print("top_keywords:", top_keywords, "\n")
+    # print("top_keywords:", top_keywords, "\n")
 
     # print("Time taken: %s seconds" % (time.time() - start))
     

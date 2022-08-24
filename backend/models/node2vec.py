@@ -50,10 +50,11 @@ def calculate_adjacency_matrix(embeddings: Dict[str, List[float]], threshold=0.0
     return adj_mtx_r
 
 # we need to sort predicted edges so that ones that are most likely to appear are first in list
-def predict(embeddings):
+def predict(embeddings: Dict[str, List[float]]):
     adj_matrix = calculate_adjacency_matrix(embeddings=embeddings, threshold=0.0)
     
     predicted_edge_list = adj_matrix
     sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
     
+    print("\ntype: ", type(sorted_predicted_edges))
     return sorted_predicted_edges
