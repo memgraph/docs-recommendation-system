@@ -36,7 +36,7 @@ class Scraper:
         joined_path = self.is_valid_url(self.g_url, path)
         if joined_path:
             text = extract_text("", joined_path)
-            if text:
+            if text and joined_path not in self.all_urls:
                 self.all_urls.append(joined_path)
                 self.documents.append(text)
                    
@@ -52,7 +52,7 @@ class Scraper:
         joined_path = self.is_valid_url(url, url)
         if joined_path:
             text = extract_text(content, "")
-            if text:
+            if text and joined_path not in self.all_urls:
                 self.all_urls.append(joined_path)
                 self.documents.append(text)
             
@@ -77,7 +77,7 @@ class Scraper:
         for link in soup.find_all('a', href=True):
             path = link.get('href')
             joined_path = self.is_valid_url(url, path)
-            if joined_path:
+            if joined_path and joined_path not in self.all_urls:
                 self.all_urls.append(joined_path)
                 text = extract_text("", joined_path)
                 self.documents.append(text)

@@ -66,10 +66,13 @@ def recommend_docs():
 
     return make_response(dumps(recs), 200)
 
-@app.route("/webpage/<url>")
+@app.route("/webpage/")
 def get_webpage(url):
     """Get info about web page whose url is <url>."""
     
+    args = request.args
+    url = args["url"]
+
     try:
         results = Match() \
             .node(labels="WebPage", variable="node_a") \
@@ -79,8 +82,8 @@ def get_webpage(url):
             .execute()
             
         links_set = set()
-        nodes_set = set()    
-            
+        nodes_set = set()
+        
         for result in results:
             node: Node = result["node_a"]
             
@@ -88,7 +91,7 @@ def get_webpage(url):
                 source_name = node._properties["name"]
                 source_url = node._properties["url"]
                 source_label = "WebPage"
-
+                
                 node2: Node = result["node_b"]
                 target_name = node2._properties["name"]
                 target_url = node2._properties["url"]
@@ -96,26 +99,18 @@ def get_webpage(url):
                 
                 nodes_set.add((source_name, source_url, source_label))
                 nodes_set.add((target_name, target_url, target_label))
-
-                if (source_name, target_name) not in links_set and (
-                    target_name, source_name,
-                ) not in links_set:
+                
+                if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set:
                     links_set.add((source_name, target_name))
-            
-        nodes = [
-            {"name": node_name, "url": node_url, "label": node_label, }
-            for node_name, node_url, node_label in nodes_set
-        ]
+                    
+        nodes = [{"id": node_url, "name": node_name, "label": node_label, } for node_url, node_name, node_label in nodes_set]
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
+        res = {"nodes": nodes, "links": links, "base_url": url}
         
-        response = {"nodes": nodes, "links": links}
-        
-        """return Response(
-            response=dumps(response), status=200, mimetype="application/json"
-        )"""
+        return make_response(res, 200)
         
     except Exception as e:
-        log.info("Fetching streamer by name went wrong.")
+        log.info("Fetching URL went wrong.")
         log.info(e)
         return ("", 500)
 

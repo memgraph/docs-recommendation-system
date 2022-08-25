@@ -34,15 +34,14 @@ def create_matrix(key_sets: List[Set[str]]):
             A[i][j] = 0 if i == j else jaccard_set(key_sets[i], key_sets[j])
     return A
 
-def find2nd(string , ch) :
+def findNext(string , ch, num) :
     s = string[::-1]
     occur = 0;
  
     for i in range(len(s)) :
         if (s[i] == ch) :
             occur += 1;
-            
-        if (occur == 2) :
+        if (occur == num) :
             return len(s)-i-1;
     
     return -1;
@@ -50,11 +49,16 @@ def find2nd(string , ch) :
 def getName(string):
     index = string.rfind('/')
     name = string[index+1:]
+    flag, num = 1, 1
     
-    for key in names:
-        if names[key] == name:
-            index = find2nd(string, '/')
-            name = string[index+1:]
+    while(flag):
+        flag = 0
+        for key in names:
+            if names[key] == name:
+                flag = 1
+                num += 1 
+                index = findNext(string, '/', num)
+                name = string[index+1:]
     return name
 
 # import data into Memgraph db
@@ -68,7 +72,7 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
         s = getName(url)
         names[url] = s
         WebPage(name=s, url=url).save(memgraph)
-        
+    
     similarity_matrix = create_matrix(key_sets)
     
     for i in range(len(urls)):
@@ -82,12 +86,12 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
         
         s = names[url]
         s_node = WebPage(url=url, name=s).load(db=memgraph)
-       
+        
         for index in similar_nodes_indices:
             if index:
                 similar_nodes.append(urls[index])
         
-        # create realtionships
+        # create relationships
         for similar_node in similar_nodes:
             e = names[similar_node]
             e_node = WebPage(url=similar_node, name=e).load(db=memgraph)
