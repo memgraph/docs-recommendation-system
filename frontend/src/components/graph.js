@@ -23,7 +23,7 @@ const Graph = ({ nodesData, linksData, base_url }) => {
           "link",
           d3
             .forceLink(links)
-            .distance(150)
+            .distance(100)
             .id((d) => d.id)
         )
         .force("charge", d3.forceManyBody())

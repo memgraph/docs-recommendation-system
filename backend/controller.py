@@ -54,7 +54,6 @@ class Controller:
                         break
 
     def link_prediction(self, url_name:str) -> None:
-        self.link_prediction_recs = []
         nodes, precise_edges = link_prediction()
 
         num_of_recs = 0

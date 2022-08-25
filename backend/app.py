@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from json import dumps
-
+from typing import Tuple
 import nltk
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
@@ -112,26 +112,56 @@ def get_webpage():
             .return_() \
             .execute()
 
+        results_list = []
         links_set = set()
         nodes_set = set()
+        parents = []
         
         for result in results:
             node: Node = result["node_a"]
-            if node._properties["url"] == url:
-                source_name = node._properties["name"]
-                source_url = node._properties["url"]
+            name_a = node._properties["name"]
+            url_a = node._properties["url"]
+            
+            node2: Node = result["node_b"]
+            name_b = node2._properties["name"]
+            url_b = node2._properties["url"]
+
+            results_list.append([(name_a, url_a), (name_b, url_b)])
+            
+        for result in results_list:
+            if result[0][1] == url:
+                source_name = result[0][0] 
+                source_url = result[0][1] 
                 source_label = "WebPage"
 
-                node2: Node = result["node_b"]
-                target_name = node2._properties["name"]
-                target_url = node2._properties["url"]
+                target_name = result[1][0] 
+                target_url = result[1][1] 
                 target_label = "WebPage"
-
+                
                 nodes_set.add((source_name, source_url, source_label))
                 nodes_set.add((target_name, target_url, target_label))
                 if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set:
                     links_set.add((source_name, target_name))
+                
+                if target_name not in parents:
+                    parents.append(target_name) 
+        
+        for parent in parents:
+            for result in results_list:
+                if result[0][0] == parent:
+                    source_name = result[0][0] 
+                    source_url = result[0][1] 
+                    source_label = "WebPage"
 
+                    target_name = result[1][0] 
+                    target_url = result[1][1] 
+                    target_label = "WebPage"
+                    
+                    nodes_set.add((source_name, source_url, source_label))
+                    nodes_set.add((target_name, target_url, target_label))
+                    if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set and target_name not in parents:
+                        links_set.add((source_name, target_name))
+            
         nodes = [{"id": node_url, "name": node_name, "label": node_label, } for node_url, node_name, node_label in nodes_set]
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
         res = {"nodes": nodes, "links": links, "base_url": url}
@@ -142,7 +172,6 @@ def get_webpage():
         log.info("Fetching URL went wrong.")
         log.info(e)
         return ("", 500)
-
 
 def log_time(func):
     @wraps(func)
