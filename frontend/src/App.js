@@ -10,14 +10,18 @@ import { Box, LinearProgress, Divider } from '@mui/material';
 const App = () => {
 
   const [recommendations, setRecommendations] = useState({})
+  const [graphData, setGraphData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [displayRecs, setDisplayRecs] = useState(false)
   const [displayStats, setDisplayStats] = useState(false)
-  const [displayPagerank, setDisplayPagerank] = useState(false)    
+  const [displayPagerank, setDisplayPagerank] = useState(false)  
+  const [displayGraph, setDisplayGraph] = useState(false)  
 
   useEffect(() => { setDisplayRecs(false) }, [])
 
   const updateRecommendations = (data) => { setRecommendations(data) }
+
+  const updateGraph = (graphData) => { setGraphData(graphData) }
 
   const updateLoader = (value) => { setIsLoading(value) }
 
@@ -26,6 +30,8 @@ const App = () => {
   const showStats = (value) => { setDisplayStats(value) }
 
   const showPagerank = (value) => { setDisplayPagerank(value) }
+
+  const showGraph = (value) => { setDisplayGraph(value) }
   
   return (
     <div className="App">
@@ -35,9 +41,9 @@ const App = () => {
         displayRecs ? 
         (
           <div className="flexbox-container" style={{ width: '90%', paddingLeft: "5%", marginTop: '15px'}}>
-            <Recommendations data={recommendations} updateStats={showStats} updatePagerank={showPagerank}/>
+            <Recommendations data={recommendations} updateStats={showStats} updateGraph={showGraph} updateGraphData={updateGraph} updatePagerank={showPagerank}/>
             <Divider orientation="vertical" variant="middle" flexItem />
-            <Visualisation data={recommendations} displayStats={displayStats} displayPagerank={displayPagerank}/>
+            <Visualisation data={recommendations} graphData={graphData} displayStats={displayStats} displayGraph={displayGraph} displayPagerank={displayPagerank}/>
           </div>
         ) :
         (

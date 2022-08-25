@@ -10,7 +10,7 @@ from gqlalchemy import Call, Match, Node
 from gqlalchemy.query_builders.declarative_base import Order
 
 from controller import Controller
-from database import memgraph
+from database import memgraph, names
 from scraper import get_links_and_documents
 
 log = logging.getLogger(__name__)
@@ -62,57 +62,10 @@ def recommend_docs():
     #TODO: if there are no top recommendations, redirect to certain docs/wiki page?
     recs = {"tf-idf": controller.tf_idf_recs, "similarities": controller.similarities,
             "top_keywords": controller.top_keywords, "node2vec": controller.node2vec_recs, 
-            "link_prediction": controller.link_prediction_recs}
+            "link_prediction": controller.link_prediction_recs, "names": names}
 
     return make_response(dumps(recs), 200)
 
-@app.route("/webpage/")
-def get_webpage(url):
-    """Get info about web page whose url is <url>."""
-    
-    args = request.args
-    url = args["url"]
-
-    try:
-        results = Match() \
-            .node(labels="WebPage", variable="node_a") \
-            .to(relationship_type="SIMILAR_TO", variable="edge") \
-            .node(labels="WebPage", variable="node_b") \
-            .return_() \
-            .execute()
-            
-        links_set = set()
-        nodes_set = set()
-        
-        for result in results:
-            node: Node = result["node_a"]
-            
-            if node._properties["url"] == url:
-                source_name = node._properties["name"]
-                source_url = node._properties["url"]
-                source_label = "WebPage"
-                
-                node2: Node = result["node_b"]
-                target_name = node2._properties["name"]
-                target_url = node2._properties["url"]
-                target_label = "WebPage"
-                
-                nodes_set.add((source_name, source_url, source_label))
-                nodes_set.add((target_name, target_url, target_label))
-                
-                if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set:
-                    links_set.add((source_name, target_name))
-                    
-        nodes = [{"id": node_url, "name": node_name, "label": node_label, } for node_url, node_name, node_label in nodes_set]
-        links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
-        res = {"nodes": nodes, "links": links, "base_url": url}
-        
-        return make_response(res, 200)
-        
-    except Exception as e:
-        log.info("Fetching URL went wrong.")
-        log.info(e)
-        return ("", 500)
 
 # TODO: pagerank in progress...
 @app.route("/page-rank")
@@ -144,6 +97,52 @@ def get_page_rank():
         log.info("Fetching users' ranks using pagerank went wrong.")
         log.info(e)
         return ("", 500)
+
+@app.route("/webpage/")
+def get_webpage():
+    """Get info about specific web page."""
+    args = request.args
+    url = args["url"]
+    
+    try:
+        results = Match() \
+            .node(labels="WebPage", variable="node_a") \
+            .to(relationship_type="SIMILAR_TO", variable="edge") \
+            .node(labels="WebPage", variable="node_b") \
+            .return_() \
+            .execute()
+
+        links_set = set()
+        nodes_set = set()
+        
+        for result in results:
+            node: Node = result["node_a"]
+            if node._properties["url"] == url:
+                source_name = node._properties["name"]
+                source_url = node._properties["url"]
+                source_label = "WebPage"
+
+                node2: Node = result["node_b"]
+                target_name = node2._properties["name"]
+                target_url = node2._properties["url"]
+                target_label = "WebPage"
+
+                nodes_set.add((source_name, source_url, source_label))
+                nodes_set.add((target_name, target_url, target_label))
+                if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set:
+                    links_set.add((source_name, target_name))
+
+        nodes = [{"id": node_url, "name": node_name, "label": node_label, } for node_url, node_name, node_label in nodes_set]
+        links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
+        res = {"nodes": nodes, "links": links, "base_url": url}
+
+        return make_response(res, 200)
+    
+    except Exception as e:
+        log.info("Fetching URL went wrong.")
+        log.info(e)
+        return ("", 500)
+
 
 def log_time(func):
     @wraps(func)

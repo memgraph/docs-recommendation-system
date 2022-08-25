@@ -27,6 +27,10 @@ class Controller:
 
     def node2vec(self, documents:List[str], all_urls:List[str], url_name:str) -> None:
         new_docs = tf_idf_keywords(documents)
+
+        self.node2vec_recs = []
+        #new_docs = rake(documents)
+
         populate_db(all_urls, new_docs)
         nodes, node_embeddings = get_embeddings_as_properties()
         predicted_edges = predict(node_embeddings)
@@ -50,6 +54,7 @@ class Controller:
                         break
 
     def link_prediction(self, url_name:str) -> None:
+        self.link_prediction_recs = []
         nodes, precise_edges = link_prediction()
 
         num_of_recs = 0
