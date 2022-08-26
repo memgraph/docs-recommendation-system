@@ -49,7 +49,7 @@ class Controller:
 
         for i in top_rec_name:
             for result in nodes:
-                if(result["n_name"] == i):
+                if result["n_name"] == i:
                         self.node2vec_recs.append(result["n_url"])
                         break
 
@@ -58,6 +58,7 @@ class Controller:
 
         num_of_recs = 0
         top_link_name = []
+        self.link_prediction_recs = []
 
         for key in precise_edges:
             if num_of_recs == 3:
@@ -71,6 +72,6 @@ class Controller:
 
         for i in top_link_name:   
             for result in nodes:
-                if(result["n_name"] == i):
+                if result["n_name"] == i:
                     self.link_prediction_recs.append(result["n_url"])
                     break  

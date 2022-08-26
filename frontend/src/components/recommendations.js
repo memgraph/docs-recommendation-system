@@ -53,7 +53,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updatePagerank
         })
         if(okRequest){
             showPagerank()     
-            console.log("pagerank:", response.data)
+            //console.log("pagerank:", response.data)
             updatePagerankData(response.data)
         }
     }
@@ -64,7 +64,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updatePagerank
                        marginLeft: "15px", marginRight: "15px" }}>
                 <Box>
                     <List subheader={
-                            <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }}>
+                            <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }} disableSticky="true">
                                 TF-IDF recommendations
                             </ListSubheader>}>
                         { tf_idfItems.map((item, index) => <ListItem  key={index}><Link href={item} underline="hover" target="_blank" rel="noopener noreferrer">

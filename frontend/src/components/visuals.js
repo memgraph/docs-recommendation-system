@@ -24,7 +24,7 @@ export const Visualisation = ({ data, graphData, pageRankData, displayStats, dis
         <>
             { showStats ? <Statistics data={recs} /> :
               ( showPagerank ? <PagerankWrapper pagerankData={pagerankData}/> : 
-                ( showGraph ? <GraphWrapper nodes={graph.nodes} links={graph.links} url={graph.base_url}/> :
+                ( showGraph ? <GraphWrapper nodes={graph.nodes} links={graph.links} /> :
                     (<Box sx={{ width: "60%", alignItems: "center", justifyContent: 'center' }}>
                         <img style={{ paddingTop: "15%" }} src="https://playground.memgraph.com/assets/img/GraphView.svg" alt="" width="320" height="160"></img>
                         <Typography sx={{ paddingTop: "10px" }} variant="subtitle1">

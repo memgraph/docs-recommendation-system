@@ -67,10 +67,9 @@ def recommend_docs():
     return make_response(dumps(recs), 200)
 
 
-# TODO: pagerank in progress...
 @app.route("/pagerank")
-def get_page_rank():
-    """Call the Page rank procedure and return top 30 in descending order."""
+def get_pagerank():
+    """Call the Pagerank procedure and return top 30 in descending order."""
     try:
         results = list(
             Call("pagerank.get")
@@ -94,6 +93,7 @@ def get_page_rank():
 
         res = {"page_rank": page_rank_list}
         return make_response(res, 200)
+
     except Exception as e:
         log.info("Fetching users' ranks using pagerank went wrong.")
         log.info(e)

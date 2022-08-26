@@ -34,30 +34,30 @@ def create_matrix(key_sets: List[Set[str]]):
             A[i][j] = 0 if i == j else jaccard_set(key_sets[i], key_sets[j])
     return A
 
-def findNext(string , ch, num) :
+def find_next(string , ch, num) :
     s = string[::-1]
-    occur = 0;
+    occur = 0
  
     for i in range(len(s)) :
-        if (s[i] == ch) :
-            occur += 1;
-        if (occur == num) :
-            return len(s)-i-1;
+        if s[i] == ch:
+            occur += 1
+        if occur == num:
+            return len(s)-i-1
     
-    return -1;
+    return -1
 
-def getName(string):
+def get_name(string):
     index = string.rfind('/')
     name = string[index+1:]
-    flag, num = 1, 1
+    flag, num = True, 1
     
-    while(flag):
-        flag = 0
+    while flag:
+        flag = False
         for key in names:
             if names[key] == name:
-                flag = 1
+                flag = True
                 num += 1 
-                index = findNext(string, '/', num)
+                index = find_next(string, '/', num)
                 name = string[index+1:]
     return name
 
@@ -68,8 +68,9 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     memgraph.execute(query)
     
     # create nodes of urls
+    names.clear()
     for url in urls:
-        s = getName(url)
+        s = get_name(url)
         names[url] = s
         WebPage(name=s, url=url).save(memgraph)
     

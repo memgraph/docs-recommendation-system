@@ -2,32 +2,22 @@ import React from "react";
 import { useD3 } from "./hooks/useD3";
 import * as d3 from "d3";
 
-const Graph = ({ nodesData, linksData, base_url }) => {
+const Graph = ({ nodesData, linksData }) => {
 
   const nodes = nodesData
   const links = linksData
-  const url = base_url
-
-  console.log("nodes", nodes)
-  console.log("links", links)
-  console.log("url", url)
 
   const ref = useD3(
     (svg) => {
+      const height = 550
+      const width = 600
+
       svg.selectAll("*").remove();
-      const height = 500;
-      const width = 500;
       const simulation = d3
         .forceSimulation(nodes)
-        .force(
-          "link",
-          d3
-            .forceLink(links)
-            .distance(100)
-            .id((d) => d.id)
-        )
+        .force("link", d3.forceLink(links).distance(100).id((d) => d.id))
         .force("charge", d3.forceManyBody().strength(-200))
-        .force("center", d3.forceCenter(width, height/2 + 10));
+        .force("center", d3.forceCenter(width/2, height/2));
 
       const link = svg
         .append("g")
@@ -64,7 +54,7 @@ const Graph = ({ nodesData, linksData, base_url }) => {
         .enter()
         .append("text")
         .text(function (d) {
-          return d.id; //return d.label for label
+          return d.id;
         })
         .style("text-anchor", "middle")
         .style("fill", "black")
@@ -93,14 +83,15 @@ const Graph = ({ nodesData, linksData, base_url }) => {
 
   const refEmpty = useD3((svg) => {
     svg.selectAll("*").remove();
-    const height = 500;
-    const width = 500;
+    const height = 550
+    const width = 600
+
     var g = svg.append("g").attr("transform", function (d, i) {
       return "translate(0,0)";
     });
     g.append("text")
-      .attr("x", width / 2)
-      .attr("y", height / 2)
+      .attr("x", width/2)
+      .attr("y", height/2)
       .attr("fill", "#ff7701")
       .attr("font-weight", "50")
       .text("No data available")
@@ -136,31 +127,30 @@ const Graph = ({ nodesData, linksData, base_url }) => {
   
   if (nodes.length !== 0) {
     return (
-      <svg
-        ref={ref}
-        style={{
-          height: 550,
-          width: "100%",
-          marginTop: "0px",
-          marginLeft: "4%",
-          backgroundColor: "#F0F0F0",
-          borderRadius: "3px"
-        }}
-      ></svg>
+      <svg ref={ref}
+          style={{
+            height: 550,
+            width: 600,
+            marginTop: "0px",
+            marginLeft: "4%",
+            backgroundColor: "#F0F0F0",
+            borderRadius: "3px"
+            }}>
+        </svg>
     );
   } else {
     return (
-      <svg
-        ref={refEmpty}
-        style={{
-          height: 550,
-          width: "100%",
-          marginTop: "0px",
-          marginLeft: "4%",
-          backgroundColor: "#F0F0F0",
-          borderRadius: "3px"
-        }}
-      ></svg>
+        <svg
+          ref={refEmpty}
+          style={{
+            height: 550,
+            width: 600,
+            marginTop: "0px",
+            marginLeft: "4%",
+            backgroundColor: "#F0F0F0",
+            borderRadius: "3px"
+          }}>
+        </svg>
     );
   }
 }

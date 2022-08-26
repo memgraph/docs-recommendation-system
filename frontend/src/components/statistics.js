@@ -13,22 +13,18 @@ import Paper from '@mui/material/Paper';
 export const Statistics = ({ data }) => {
 
     const [recs, setRecs] = useState([])
+    const [names, setNames] = useState({})
     const [keywords, setKeywords] = useState({})
     const [similarities, setSimilarities] = useState([])
 
     useEffect(() => {
         setRecs(data["tf-idf"])
+        setNames(data["names"])
         setKeywords(data["top_keywords"])
         setSimilarities(data["similarities"])
       }, [data])
 
-    const getPageName = (link) => {
-        const parts = link.split("/")
-        let pageName = parts[parts.length - 1]
-        if(pageName === "")  pageName = parts[parts.length - 2]
-        
-        return pageName  
-    }
+    const getPageName = (link) => { return names[link] }
       
     return ( 
         <Box sx={{ width: "60%", justifyContent: 'center' }}>
@@ -67,7 +63,7 @@ export const Statistics = ({ data }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {recs.map((item, index) => (
+                            { recs.map((item, index) => (
                                 <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell component="th" scope="row">{getPageName(item)}</TableCell>
                                     <TableCell align="right">{similarities[index]}</TableCell>
