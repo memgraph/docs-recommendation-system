@@ -33,13 +33,13 @@ export const Statistics = ({ data }) => {
     return ( 
         <Box sx={{ width: "60%", justifyContent: 'center' }}>
             <List sx={{paddingLeft: "4%"}} subheader={
-                <ListSubheader sx={{ display: 'inline-flex', fontSize: "17px" }}>
+                <ListSubheader sx={{ display: 'inline-flex', fontSize: "17px" }} disableSticky="true">
                     Statistics of the TF-IDF algorithm
                 </ListSubheader>}>
                 <TableContainer component={Paper}>
                     <Table size="small" aria-label="a dense table">
                         <TableHead>
-                            <TableRow>
+                            <TableRow style={{background: "#F0F0F0" }}>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Most important word</TableCell>
                                 <TableCell align="center" sx={{ fontWeight: 'bold' }}># of documents</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 'bold' }}>% of documents</TableCell>
@@ -61,7 +61,7 @@ export const Statistics = ({ data }) => {
                 <TableContainer sx={{ marginTop: "10px" }} component={Paper}>
                     <Table size="small" aria-label="a dense table">
                         <TableHead>
-                            <TableRow>
+                            <TableRow style={{background: "#F0F0F0" }}>
                                 <TableCell sx={{ fontWeight: 'bold' }}>Document</TableCell>
                                 <TableCell align="right" sx={{ fontWeight: 'bold' }}>Similarity score (cos)</TableCell>
                             </TableRow>

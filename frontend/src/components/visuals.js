@@ -1,14 +1,15 @@
 import React, {useState, useEffect}  from "react";
 import { Statistics } from './statistics';
-import { Pagerank } from './pagerank'
+import { PagerankWrapper } from './pagerankWrapper'
 import { Box } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import GraphWrapper from "./graphWrapper";
 
-export const Visualisation = ({ data, graphData, displayStats, displayGraph, displayPagerank} ) => {
+export const Visualisation = ({ data, graphData, pageRankData, displayStats, displayGraph, displayPagerank} ) => {
 
     const recs = data
     const graph = graphData
+    const pagerankData = pageRankData
     const [showStats, setShowStats] = useState(false)
     const [showGraph, setShowGraph] = useState(false)
     const [showPagerank, setShowPagerank] = useState(false)
@@ -22,7 +23,7 @@ export const Visualisation = ({ data, graphData, displayStats, displayGraph, dis
     return (
         <>
             { showStats ? <Statistics data={recs} /> :
-              ( showPagerank ? <Pagerank /> : 
+              ( showPagerank ? <PagerankWrapper pagerankData={pagerankData}/> : 
                 ( showGraph ? <GraphWrapper nodes={graph.nodes} links={graph.links} url={graph.base_url}/> :
                     (<Box sx={{ width: "60%", alignItems: "center", justifyContent: 'center' }}>
                         <img style={{ paddingTop: "15%" }} src="https://playground.memgraph.com/assets/img/GraphView.svg" alt="" width="320" height="160"></img>

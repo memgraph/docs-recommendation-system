@@ -68,35 +68,36 @@ def recommend_docs():
 
 
 # TODO: pagerank in progress...
-@app.route("/page-rank")
+@app.route("/pagerank")
 def get_page_rank():
     """Call the Page rank procedure and return top 30 in descending order."""
-    try:
-        results = list(
-            Call("pagerank.get")
-            .yield_()
-            .with_(["node", "rank"])
-            .return_([("node.name", "node_name"), "rank"])
-            .order_by(properties=("rank", Order.DESC))
-            .limit(30)
-            .execute()
-        )
-        page_rank_dict = dict()
-        page_rank_list = list()
-        for result in results:
-            user_name = result["node_name"]
-            rank = float(result["rank"])
-            page_rank_dict = {"name": user_name, "rank": rank}
-            dict_copy = page_rank_dict.copy()
-            page_rank_list.append(dict_copy)
-        response = {"page_rank": page_rank_list}
-        return Response(
-            response=dumps(response), status=200, mimetype="application/json"
-        )
-    except Exception as e:
+    #try:
+    results = list(
+        Call("pagerank.get")
+        .yield_()
+        .with_(["node", "rank"])
+        .return_([("node.name", "node_name"), "rank"])
+        .order_by(properties=("rank", Order.DESC))
+        .limit(30)
+        .execute()
+    )
+
+    page_rank_dict = dict()
+    page_rank_list = list()
+
+    for result in results:
+        node_name = result["node_name"]
+        rank = float(result["rank"])
+        page_rank_dict = {"name": node_name, "rank": rank}
+        dict_copy = page_rank_dict.copy()
+        page_rank_list.append(dict_copy)
+
+    res = {"page_rank": page_rank_list}
+    return make_response(res, 200)
+    """except Exception as e:
         log.info("Fetching users' ranks using pagerank went wrong.")
         log.info(e)
-        return ("", 500)
+        return ("", 500)"""
 
 @app.route("/webpage/")
 def get_webpage():

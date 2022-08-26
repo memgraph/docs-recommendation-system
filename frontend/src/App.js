@@ -11,6 +11,7 @@ const App = () => {
 
   const [recommendations, setRecommendations] = useState({})
   const [graphData, setGraphData] = useState({})
+  const [pageRankData, setPageRankData] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [displayRecs, setDisplayRecs] = useState(false)
   const [displayStats, setDisplayStats] = useState(false)
@@ -21,7 +22,9 @@ const App = () => {
 
   const updateRecommendations = (data) => { setRecommendations(data) }
 
-  const updateGraph = (graphData) => { setGraphData(graphData) }
+  const updateGraph = (data) => { setGraphData(data) }
+
+  const updatePagerank = (data) => { setPageRankData(data) }
 
   const updateLoader = (value) => { setIsLoading(value) }
 
@@ -41,9 +44,13 @@ const App = () => {
         displayRecs ? 
         (
           <div className="flexbox-container" style={{ width: '90%', paddingLeft: "5%", marginTop: '15px'}}>
-            <Recommendations data={recommendations} updateStats={showStats} updateGraph={showGraph} updateGraphData={updateGraph} updatePagerank={showPagerank}/>
+            <Recommendations data={recommendations} updateStats={showStats} updateGraph={showGraph} 
+                             updatePagerankData={updatePagerank} updateGraphData={updateGraph} 
+                             updatePagerank={showPagerank}/>
             <Divider orientation="vertical" variant="middle" flexItem />
-            <Visualisation data={recommendations} graphData={graphData} displayStats={displayStats} displayGraph={displayGraph} displayPagerank={displayPagerank}/>
+            <Visualisation data={recommendations} graphData={graphData} pageRankData={pageRankData}
+                           displayStats={displayStats} displayGraph={displayGraph} 
+                           displayPagerank={displayPagerank}/>
           </div>
         ) :
         (

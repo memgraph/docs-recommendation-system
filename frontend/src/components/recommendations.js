@@ -1,11 +1,12 @@
 import React from "react";
+import axios from 'axios';
 import { RecsItem } from './item';
 import { Box, List, ListItem, ListSubheader, Divider, Link, Button } from '@mui/material';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import BubbleChartIcon from '@mui/icons-material/BubbleChart';
 import QueryStatsIcon from '@mui/icons-material/QueryStats';
 
-export const Recommendations = ({ data, updateStats, updateGraph, updateGraphData, updatePagerank }) => {
+export const Recommendations = ({ data, updateStats, updateGraph, updatePagerankData, updateGraphData, updatePagerank }) => {
 
     const tf_idfItems = data["tf-idf"] ? data["tf-idf"] : []
     const node2vecItems = data["node2vec"] ? data["node2vec"] : []
@@ -32,8 +33,29 @@ export const Recommendations = ({ data, updateStats, updateGraph, updateGraphDat
         updatePagerank(false) 
     }
     
-    const updateGraphData_ = (graphData) => {
-        updateGraphData(graphData)
+    const updateGraphData_ = (data) => {
+        updateGraphData(data)
+    }
+
+    const getPagerankData = async(event) => {
+        event.preventDefault()
+        let okRequest = true
+        
+        const response = await axios({
+            method: "get",
+            url: "http://localhost:5000/pagerank",
+        }).catch(error => {
+            okRequest = false
+            if(error.response.status === 500){
+                alert("Something went wrong.")
+                return
+            }
+        })
+        if(okRequest){
+            showPagerank()     
+            console.log("pagerank:", response.data)
+            updatePagerankData(response.data)
+        }
     }
 
     return (
@@ -60,7 +82,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updateGraphDat
             <Divider variant="middle" />
             <Box sx={{display: 'flex', flexDirection: "column", alignItems: "left", justifyContent: "left", marginLeft: "15px" }}>
                 <List subheader={
-                        <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }}>
+                        <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }} disableSticky="true">
                             node2vec recommendations
                         </ListSubheader>}>
                     { node2vecItems.map((item, index) => <RecsItem key={index} url={item} name={getPageName(item)} showGraph={showGraph} updateGraph={updateGraphData_}/>) }
@@ -69,7 +91,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updateGraphDat
             <Divider variant="middle" />
             <Box sx={{display: 'flex', flexDirection: "column", alignItems: "left", justifyContent: "left", marginLeft: "15px" }}>
                 <List subheader={
-                        <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }}>
+                        <ListSubheader sx={{ textAlign: "left", fontSize: "17px" }} disableSticky="true">
                             Link prediction recommendations
                         </ListSubheader>}>
                     { link_predictionsItems.map((item, index) => <RecsItem key={index} url={item} name={getPageName(item)} showGraph={showGraph} updateGraph={updateGraphData_}/>) }
@@ -77,7 +99,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updateGraphDat
             </Box>
             <Divider variant="middle" />
             <Box sx={{ marginTop: "20px", marginBottom: "20px" }}>
-                <Button variant="outlined" onClick={showPagerank}>
+                <Button variant="outlined" onClick={getPagerankData}>
                     Pagerank
                     <BubbleChartIcon sx={{ color: "#fb6e00", paddingLeft: "10px" }}></BubbleChartIcon>
                 </Button>

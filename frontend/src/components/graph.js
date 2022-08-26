@@ -27,7 +27,7 @@ const Graph = ({ nodesData, linksData, base_url }) => {
             .id((d) => d.id)
         )
         .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width / 2, height / 2));
+        .force("center", d3.forceCenter(width/2 + 100, height/2 + 20));
 
       const link = svg
         .append("g")
@@ -137,10 +137,12 @@ const Graph = ({ nodesData, linksData, base_url }) => {
       <svg
         ref={ref}
         style={{
-          height: 500,
-          width: 500,
-          marginRight: "0px",
-          marginLeft: "0px",
+          height: 550,
+          width: "100%",
+          marginTop: "0px",
+          marginLeft: "4%",
+          backgroundColor: "#F0F0F0",
+          borderRadius: "3px"
         }}
       ></svg>
     );
@@ -149,10 +151,12 @@ const Graph = ({ nodesData, linksData, base_url }) => {
       <svg
         ref={refEmpty}
         style={{
-          height: 500,
-          width: 500,
-          marginRight: "0px",
-          marginLeft: "0px",
+          height: 550,
+          width: "100%",
+          marginTop: "0px",
+          marginLeft: "4%",
+          backgroundColor: "#F0F0F0",
+          borderRadius: "3px"
         }}
       ></svg>
     );
