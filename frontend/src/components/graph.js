@@ -26,8 +26,8 @@ const Graph = ({ nodesData, linksData, base_url }) => {
             .distance(100)
             .id((d) => d.id)
         )
-        .force("charge", d3.forceManyBody())
-        .force("center", d3.forceCenter(width/2 + 100, height/2 + 20));
+        .force("charge", d3.forceManyBody().strength(-200))
+        .force("center", d3.forceCenter(width, height/2 + 10));
 
       const link = svg
         .append("g")
@@ -46,13 +46,15 @@ const Graph = ({ nodesData, linksData, base_url }) => {
         .data(nodes)
         .join("circle")
         .attr("r", function (node) {
-          if (node.name === url) return 20
-          return 15
+          if (node.depth === 0) return 30
+          else if (node.depth === 1) return 25
+          return 20
         })
         .attr("class", "node")
         .attr("fill", function (node) {
-          if (node.name === url) return "#fb6e00"
-          return "orange"
+          if (node.depth === 0) return "#fb6e00"
+          else if (node.depth === 1) return "orange"
+          return "#f5e042"
         })
         .call(drag(simulation));
 

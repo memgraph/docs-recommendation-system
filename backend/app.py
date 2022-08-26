@@ -71,33 +71,33 @@ def recommend_docs():
 @app.route("/pagerank")
 def get_page_rank():
     """Call the Page rank procedure and return top 30 in descending order."""
-    #try:
-    results = list(
-        Call("pagerank.get")
-        .yield_()
-        .with_(["node", "rank"])
-        .return_([("node.name", "node_name"), "rank"])
-        .order_by(properties=("rank", Order.DESC))
-        .limit(30)
-        .execute()
-    )
+    try:
+        results = list(
+            Call("pagerank.get")
+            .yield_()
+            .with_(["node", "rank"])
+            .return_([("node.name", "node_name"), "rank"])
+            .order_by(properties=("rank", Order.DESC))
+            .limit(30)
+            .execute()
+        )
 
-    page_rank_dict = dict()
-    page_rank_list = list()
+        page_rank_dict = dict()
+        page_rank_list = list()
 
-    for result in results:
-        node_name = result["node_name"]
-        rank = float(result["rank"])
-        page_rank_dict = {"name": node_name, "rank": rank}
-        dict_copy = page_rank_dict.copy()
-        page_rank_list.append(dict_copy)
+        for result in results:
+            node_name = result["node_name"]
+            rank = float(result["rank"])
+            page_rank_dict = {"name": node_name, "rank": rank}
+            dict_copy = page_rank_dict.copy()
+            page_rank_list.append(dict_copy)
 
-    res = {"page_rank": page_rank_list}
-    return make_response(res, 200)
-    """except Exception as e:
+        res = {"page_rank": page_rank_list}
+        return make_response(res, 200)
+    except Exception as e:
         log.info("Fetching users' ranks using pagerank went wrong.")
         log.info(e)
-        return ("", 500)"""
+        return ("", 500)
 
 @app.route("/webpage/")
 def get_webpage():
@@ -115,8 +115,8 @@ def get_webpage():
 
         results_list = []
         links_set = set()
+        names_set = set()
         nodes_set = set()
-        parents = []
         
         for result in results:
             node: Node = result["node_a"]
@@ -128,10 +128,11 @@ def get_webpage():
             url_b = node2._properties["url"]
 
             results_list.append([(name_a, url_a), (name_b, url_b)])
-            
+        
         for result in results_list:
             if result[0][1] == url:
                 source_name = result[0][0] 
+                main_name = result[0][0] 
                 source_url = result[0][1] 
                 source_label = "WebPage"
 
@@ -139,17 +140,18 @@ def get_webpage():
                 target_url = result[1][1] 
                 target_label = "WebPage"
                 
-                nodes_set.add((source_name, source_url, source_label))
-                nodes_set.add((target_name, target_url, target_label))
-                if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set:
-                    links_set.add((source_name, target_name))
+                if source_name not in names_set:
+                    nodes_set.add((source_name, source_url, source_label, 0))
+                    names_set.add(source_name)
                 
-                if target_name not in parents:
-                    parents.append(target_name) 
-        
-        for parent in parents:
+                if target_name not in names_set:
+                    nodes_set.add((target_name, target_url, target_label, 1))
+                    names_set.add(target_name)
+                    links_set.add((source_name, target_name))                   
+
+        for name in names_set:
             for result in results_list:
-                if result[0][0] == parent:
+                if result[0][0] == name and result[0][0] != main_name:
                     source_name = result[0][0] 
                     source_url = result[0][1] 
                     source_label = "WebPage"
@@ -157,13 +159,13 @@ def get_webpage():
                     target_name = result[1][0] 
                     target_url = result[1][1] 
                     target_label = "WebPage"
-                    
-                    nodes_set.add((source_name, source_url, source_label))
-                    nodes_set.add((target_name, target_url, target_label))
-                    if (source_name, target_name) not in links_set and (target_name, source_name) not in links_set and target_name not in parents:
+                
+                    if target_name not in names_set:
+                        nodes_set.add((target_name, target_url, target_label, 2))
                         links_set.add((source_name, target_name))
-            
-        nodes = [{"id": node_url, "name": node_name, "label": node_label, } for node_url, node_name, node_label in nodes_set]
+    
+    
+        nodes = [{"id": node_url, "name": node_name, "label": node_label, "depth": depth} for node_url, node_name, node_label, depth in nodes_set]
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
         res = {"nodes": nodes, "links": links, "base_url": url}
 
