@@ -1,5 +1,4 @@
 import heapq
-import time
 from typing import List, Set
 
 import numpy as np
@@ -25,13 +24,12 @@ def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
         
     return new_doc
 
-
 def sort_coo(coo_matrix):
     tuples = zip(coo_matrix.col, coo_matrix.data)
     return sorted(tuples, key=lambda x: (x[1], x[0]), reverse=True)
 
 def extract_topn_from_vector(feature_names, sorted_items, topn=30):
-    """get the featuure names and tf-idf score of top n items"""
+    """get the feature names and tf-idf score of top n items"""
     
     sorted_items = sorted_items[:topn]
     score_vals = []
@@ -49,7 +47,6 @@ def extract_topn_from_vector(feature_names, sorted_items, topn=30):
     return results
 
 def tf_idf(corpus: List[str]):
-    #start = time.time()
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(corpus)
     feature_names = vectorizer.get_feature_names_out()
@@ -57,8 +54,6 @@ def tf_idf(corpus: List[str]):
     dense_list = dense.tolist()
     df = pd.DataFrame(dense_list, columns=feature_names)
     cosine_sim = cosine_similarity(tfidf_matrix, tfidf_matrix)
-
-    #-----------------------------------------------------------------------
 
     # get the column name of max values in every row
     most_important_words = list(df.idxmax(axis=1))
@@ -70,10 +65,6 @@ def tf_idf(corpus: List[str]):
     top_ten_freqs = heapq.nlargest(10, word_frequencies, key=word_frequencies.get)
     top_keywords = {key: (word_frequencies[key], round(word_frequencies[key]*100/len(corpus), 1)) 
                     for key in top_ten_freqs}
-
-    # print("top_keywords:", top_keywords, "\n")
-
-    # print("Time taken: %s seconds" % (time.time() - start))
     
     return cosine_sim, top_keywords
 
@@ -87,9 +78,9 @@ def get_recommendations(corpus: List[str]):
     index = np.where(similarities == 1.)
     similarities[index] = -1.
 
-    n = 5
+    top_n = 5
     sim_arr = np.array(similarities)
-    top_recommendations = np.argsort(sim_arr)[-n:]
+    top_recommendations = np.argsort(sim_arr)[-top_n:]
     similarities = list(sim_arr[top_recommendations])
     similarities.reverse()
 

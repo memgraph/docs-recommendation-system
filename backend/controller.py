@@ -3,11 +3,9 @@ from typing import List
 import numpy as np
 
 from database import populate_db
-from extractor import rake
 from models.link_prediction import link_prediction
 from models.node2vec import get_embeddings_as_properties, predict
 from models.tf_idf import get_recommendations, tf_idf_keywords
-
 
 class Controller:    
     def __init__(self):
@@ -22,14 +20,11 @@ class Controller:
         if len(documents) > 1:
             self.recs_indices, self.similarities, self.top_keywords = get_recommendations(documents)
             self.tf_idf_recs = [all_urls[i] for i in self.recs_indices]
-            return True
-        return False
 
     def node2vec(self, documents:List[str], all_urls:List[str], url_name:str) -> None:
         new_docs = tf_idf_keywords(documents)
 
         self.node2vec_recs = []
-        #new_docs = rake(documents)
 
         populate_db(all_urls, new_docs)
         nodes, node_embeddings = get_embeddings_as_properties()

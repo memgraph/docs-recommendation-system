@@ -35,11 +35,7 @@ const Graph = ({ nodesData, linksData }) => {
         .selectAll("circle")
         .data(nodes)
         .join("circle")
-        .attr("r", function (node) {
-          if (node.depth === 0) return 30
-          else if (node.depth === 1) return 25
-          return 20
-        })
+        .attr("r", function (node) { return 30 - 5*node.depth })
         .attr("class", "node")
         .attr("fill", function (node) {
           if (node.depth === 0) return "#fb6e00"

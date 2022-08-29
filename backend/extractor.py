@@ -4,7 +4,6 @@ import justext
 import nltk
 import requests
 from nltk.stem import WordNetLemmatizer
-from rake_nltk import Rake
 
 # extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
 def extract_text(content, url: str) -> str:
@@ -27,17 +26,3 @@ def extract_text(content, url: str) -> str:
                 text += paragraph + " "
 
     return text
-
-# extract keywords from given text using rake_nltk
-# TODO: currently not used but still a possibility
-def rake(documents: List[str]) -> List[Set[str]]:
-    new_docs = []
-    r = Rake()
-    for text in documents:
-        if not text:
-            new_docs.append({" "})
-            continue
-        r.extract_keywords_from_text(text)
-        a = set(r.get_ranked_phrases())
-        new_docs.append(a)   
-    return new_docs

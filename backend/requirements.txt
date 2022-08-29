@@ -7,6 +7,5 @@ jusText==3.0.0
 nltk==3.7
 numpy==1.23.1
 pandas==1.4.3
-rake_nltk==1.0.6
 requests==2.25.1
 scikit_learn==1.1.2

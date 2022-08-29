@@ -7,7 +7,6 @@ from gqlalchemy import Create, Field, Match, Memgraph, Node, Relationship
 
 memgraph = Memgraph()
 names = {}
-NUM_OF_CONNECTIONS = 4
 
 class WebPage(Node):
     url: str = Field(index=True, exist=True, unique=True, db=memgraph)
@@ -82,8 +81,9 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
         row = similarity_matrix[i]
         row_as_array = np.array(row)
         
+        num_of_connections = 4
         # most similar nodes in certain row
-        similar_nodes_indices = np.argpartition(row_as_array, -NUM_OF_CONNECTIONS)[-NUM_OF_CONNECTIONS:]
+        similar_nodes_indices = np.argpartition(row_as_array, -num_of_connections)[-num_of_connections:]
         
         s = names[url]
         s_node = WebPage(url=url, name=s).load(db=memgraph)

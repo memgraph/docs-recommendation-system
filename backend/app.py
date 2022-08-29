@@ -1,8 +1,10 @@
 import logging
 import os
+import threading
 import time
 from json import dumps
 from typing import Tuple
+
 import nltk
 from flask import Flask, Response, make_response, render_template, request
 from flask_cors import CORS
@@ -11,13 +13,14 @@ from gqlalchemy.query_builders.declarative_base import Order
 
 from controller import Controller
 from database import memgraph, names
-from scraper import get_links_and_documents
+from scraper import Scraper
 
 log = logging.getLogger(__name__)
 args = None
 app = Flask(__name__)
 CORS(app)
 controller = Controller()
+scraper = Scraper()
 
 @app.route("/")
 def home():
@@ -28,44 +31,71 @@ def recommend_docs():
     url = request.form["url"]
     text = request.form["text"]
 
-    documents, all_urls, status = get_links_and_documents(url)
+    try:
+        documents, all_urls, status = scraper.get_links_and_documents(url)
 
-    if status == 404:
-        return make_response("", status)
+        if status == 404:
+            return make_response("", status)
 
-    # recommend docs based on text input
-    if text:
-        documents.insert(0, text)
-        all_urls.insert(0, url + "/new_document")
+        # recommend docs based on text input
+        if text:
+            documents.insert(0, text)
+            all_urls.insert(0, url + "/new_document")
 
-    first_url = all_urls[0] 
-    ind = first_url.rfind('/')
-    url_name = first_url[ind+1:]
-    if url_name == "":
-        first_url = first_url[:ind]
+        first_url = all_urls[0] 
         ind = first_url.rfind('/')
-        url_name = first_url[ind + 1:]
-
-    # tf-idf
-    res = controller.tf_idf(documents, all_urls)
-    if not res:
-        return make_response("", -1)
-
-    # node2vec
-    controller.node2vec(documents, all_urls, url_name)
-    #TODO: add exceptions?
+        url_name = first_url[ind+1:]
+        if url_name == "":
+            first_url = first_url[:ind]
+            ind = first_url.rfind('/')
+            url_name = first_url[ind + 1:]
     
-    # link prediction
-    controller.link_prediction(url_name)
-    #TODO: add exceptions? 
-                    
-    #TODO: if there are no top recommendations, redirect to certain docs/wiki page?
-    recs = {"tf-idf": controller.tf_idf_recs, "similarities": controller.similarities,
-            "top_keywords": controller.top_keywords, "node2vec": controller.node2vec_recs, 
-            "link_prediction": controller.link_prediction_recs, "names": names}
+        recs_exist = False
+        
+        # tf-idf
+        x = threading.Thread(target=controller.tf_idf, args=(documents, all_urls,))
+        x.start()
+        #controller.tf_idf(documents, all_urls)
+        
+        # node2vec
+        y = threading.Thread(target=controller.node2vec, args=(documents, all_urls, url_name,))
+        y.start()
+        #controller.node2vec(documents, all_urls, url_name)
+        
+        # link prediction
+        z = threading.Thread(target=controller.link_prediction, args=(url_name,))
+        z.start()
+        #controller.link_prediction(url_name)
+        
+        x.join()
+        recs = controller.tf_idf_recs
+        if recs:
+            recs_exist = True
+            
+        y.join()
+        recs = controller.node2vec_recs
+        if recs:
+            recs_exist = True
+            
+        z.join()
+        recs = controller.link_prediction_recs
+        if recs:
+            recs_exist = True
+        
+        # alert if there are no recommendations    
+        if not recs_exist:
+            return make_response("", -1)
+        
+        recs = {"tf-idf": controller.tf_idf_recs, "similarities": controller.similarities,
+                "top_keywords": controller.top_keywords, "node2vec": controller.node2vec_recs, 
+                "link_prediction": controller.link_prediction_recs, "names": names}
 
-    return make_response(dumps(recs), 200)
-
+        return make_response(dumps(recs), 200)
+        
+    except Exception as e:
+        log.info("Something went wrong.")
+        log.info(e)
+        return ("", 500)
 
 @app.route("/pagerank")
 def get_pagerank():
@@ -134,18 +164,16 @@ def get_webpage():
                 source_name = result[0][0] 
                 main_name = result[0][0] 
                 source_url = result[0][1] 
-                source_label = "WebPage"
 
                 target_name = result[1][0] 
                 target_url = result[1][1] 
-                target_label = "WebPage"
                 
                 if source_name not in names_set:
-                    nodes_set.add((source_name, source_url, source_label, 0))
+                    nodes_set.add((source_name, source_url, 0))
                     names_set.add(source_name)
                 
                 if target_name not in names_set:
-                    nodes_set.add((target_name, target_url, target_label, 1))
+                    nodes_set.add((target_name, target_url, 1))
                     names_set.add(target_name)
                     links_set.add((source_name, target_name))                   
 
@@ -154,18 +182,15 @@ def get_webpage():
                 if result[0][0] == name and result[0][0] != main_name:
                     source_name = result[0][0] 
                     source_url = result[0][1] 
-                    source_label = "WebPage"
-
+        
                     target_name = result[1][0] 
                     target_url = result[1][1] 
-                    target_label = "WebPage"
-                
+                    
                     if target_name not in names_set:
-                        nodes_set.add((target_name, target_url, target_label, 2))
+                        nodes_set.add((target_name, target_url, 2))
                         links_set.add((source_name, target_name))
     
-    
-        nodes = [{"id": node_url, "name": node_name, "label": node_label, "depth": depth} for node_url, node_name, node_label, depth in nodes_set]
+        nodes = [{"id": node_url, "name": node_name, "depth": depth} for node_url, node_name, depth in nodes_set]
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
         res = {"nodes": nodes, "links": links, "base_url": url}
 
