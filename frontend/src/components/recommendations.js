@@ -53,7 +53,6 @@ export const Recommendations = ({ data, updateStats, updateGraph, updatePagerank
         })
         if(okRequest){
             showPagerank()     
-            //console.log("pagerank:", response.data)
             updatePagerankData(response.data)
         }
     }

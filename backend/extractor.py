@@ -1,5 +1,3 @@
-from typing import List, Set
-
 import justext
 import nltk
 import requests

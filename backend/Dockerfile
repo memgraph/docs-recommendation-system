@@ -9,6 +9,10 @@ RUN apt-get update && \
 
 COPY ./requirements.txt ./
 RUN pip install -r requirements.txt
+RUN python -m nltk.downloader stopwords
+RUN python -m nltk.downloader wordnet
+RUN python -m nltk.downloader omw-1.4
+RUN python -m nltk.downloader punkt
 
 COPY . /app
 WORKDIR /app

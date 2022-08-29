@@ -5,8 +5,7 @@ import time
 from json import dumps
 from typing import Tuple
 
-import nltk
-from flask import Flask, Response, make_response, render_template, request
+from flask import Flask, make_response, render_template, request
 from flask_cors import CORS
 from gqlalchemy import Call, Match, Node
 from gqlalchemy.query_builders.declarative_base import Order
@@ -24,10 +23,12 @@ scraper = Scraper()
 
 @app.route("/")
 def home():
+    """Home endpoint."""
     return render_template("home.html")
 
 @app.route("/recommendations", methods=["POST"])
 def recommend_docs():
+    """Returns recommendations based on tfidf, node2vec and link prediction algorithms."""
     url = request.form["url"]
     text = request.form["text"]
 
@@ -162,11 +163,11 @@ def get_webpage():
         for result in results_list:
             if result[0][1] == url:
                 source_name = result[0][0] 
-                main_name = result[0][0] 
-                source_url = result[0][1] 
+                main_name = result[0][0]
+                source_url = result[0][1]
 
                 target_name = result[1][0] 
-                target_url = result[1][1] 
+                target_url = result[1][1]
                 
                 if source_name not in names_set:
                     nodes_set.add((source_name, source_url, 0))
@@ -181,15 +182,16 @@ def get_webpage():
             for result in results_list:
                 if result[0][0] == name and result[0][0] != main_name:
                     source_name = result[0][0] 
-                    source_url = result[0][1] 
-        
+                    source_url = result[0][1]
+
                     target_name = result[1][0] 
-                    target_url = result[1][1] 
-                    
+                    target_url = result[1][1]
+                
                     if target_name not in names_set:
                         nodes_set.add((target_name, target_url, 2))
                         links_set.add((source_name, target_name))
-    
+
+
         nodes = [{"id": node_url, "name": node_name, "depth": depth} for node_url, node_name, depth in nodes_set]
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
         res = {"nodes": nodes, "links": links, "base_url": url}
@@ -200,17 +202,6 @@ def get_webpage():
         log.info("Fetching URL went wrong.")
         log.info(e)
         return ("", 500)
-
-def log_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        duration = time.time() - start_time
-        log.info(f"Time for {func.__name__} is {duration}")
-        return result
-
-    return wrapper
 
 def init_log():
     logging.basicConfig(level=logging.DEBUG)
@@ -223,15 +214,9 @@ def connect_to_memgraph():
         if memgraph._get_cached_connection().is_active():
             connection_established = True
 
-def download_nltk_packages():
-    nltk.download('stopwords')
-    nltk.download('wordnet')
-    nltk.download('omw-1.4')
-    nltk.download('punkt')
 
 if __name__ == '__main__':
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
         #init_log()
         connect_to_memgraph()
-        download_nltk_packages()
     app.run(debug=True, host="0.0.0.0", port=5000)

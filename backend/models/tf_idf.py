@@ -29,7 +29,7 @@ def sort_coo(coo_matrix):
     return sorted(tuples, key=lambda x: (x[1], x[0]), reverse=True)
 
 def extract_topn_from_vector(feature_names, sorted_items, topn=30):
-    """get the feature names and tf-idf score of top n items"""
+    """Get the featuure names and tf-idf score of top n items."""
     
     sorted_items = sorted_items[:topn]
     score_vals = []

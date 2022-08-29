@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FormControl, Input, Button, TextField, Box} from '@mui/material';
+import { FormControl, Input, Button, TextField, Box, Tooltip} from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -76,12 +76,16 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
             <Box>
             {show && 
                 <FormControl style={{ width: "35%"}} >
-                    <Input sx={{ marginBottom: "20px" }} placeholder="documentation link" onChange={handleUrlChange}/>
-                    <TextField sx={{ marginBottom: "10px" }} 
-                            id="standard-multiline-static" 
-                            label="Recommend by text:" 
-                            multiline rows={8} defaultValue="" variant="standard"
-                            onChange={handleTextChange}/>
+                    <Tooltip title="Input URL of certain documentation" arrow>
+                        <Input sx={{ marginBottom: "20px" }} placeholder="URL" onChange={handleUrlChange}/>
+                    </Tooltip>
+                    <Tooltip title="Optional - find recommendations based on URL and text input" arrow>
+                        <TextField sx={{ marginBottom: "10px" }} 
+                                id="standard-multiline-static" 
+                                label="Recommend by text:" 
+                                multiline rows={8} defaultValue="" variant="standard"
+                                onChange={handleTextChange}/>
+                    </Tooltip>
                     <Button onClick={handleSubmit}>Recommend</Button>
                 </FormControl>
             }
