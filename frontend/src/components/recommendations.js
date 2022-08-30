@@ -104,7 +104,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updatePagerank
                 </Button>
             </Box>
         </Box>
-    );
+    )
 }
 
 export default Recommendations;

@@ -17,7 +17,7 @@ const Graph = ({ nodesData, linksData }) => {
         .forceSimulation(nodes)
         .force("link", d3.forceLink(links).distance(100).id((d) => d.id))
         .force("charge", d3.forceManyBody().strength(-200))
-        .force("center", d3.forceCenter(width/2, height/2));
+        .force("center", d3.forceCenter(width/2, height/2))
 
       const link = svg
         .append("g")
@@ -26,7 +26,7 @@ const Graph = ({ nodesData, linksData }) => {
         .selectAll("line")
         .data(links)
         .join("line")
-        .attr("stroke-width", 1);
+        .attr("stroke-width", 1)
 
       const node = svg
         .append("g")
@@ -42,49 +42,40 @@ const Graph = ({ nodesData, linksData }) => {
           else if (node.depth === 1) return "orange"
           return "#f5e042"
         })
-        .call(drag(simulation));
+        .call(drag(simulation))
 
       var label = svg
         .selectAll(null)
         .data(nodes)
         .enter()
         .append("text")
-        .text(function (d) {
-          return d.id;
-        })
+        .text(function (d) { return d.id })
         .style("text-anchor", "middle")
         .style("fill", "black")
         .style("font-family", "Arial")
-        .style("font-size", "12px");
+        .style("font-size", "12px")
 
       simulation.on("tick", () => {
         link
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
+          .attr("y2", (d) => d.target.y)
 
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y)
         label
-          .attr("x", function (d) {
-            return d.x;
-          })
-          .attr("y", function (d) {
-            return d.y - 15;
-          });
+          .attr("x", function (d) { return d.x })
+          .attr("y", function (d) { return d.y - 15 })
       });
-    },
-    [nodes.length]
+    }, [nodes.length]
   );
 
   const refEmpty = useD3((svg) => {
-    svg.selectAll("*").remove();
+    svg.selectAll("*").remove()
     const height = 550
     const width = 600
 
-    var g = svg.append("g").attr("transform", function (d, i) {
-      return "translate(0,0)";
-    });
+    var g = svg.append("g").attr("transform", function (d, i) { return "translate(0,0)" })
     g.append("text")
       .attr("x", width/2)
       .attr("y", height/2)
@@ -93,61 +84,56 @@ const Graph = ({ nodesData, linksData }) => {
       .text("No data available")
       .style("text-anchor", "middle")
       .style("font-family", "Arial")
-      .style("font-size", "20px");
-  });
+      .style("font-size", "20px")
+  })
 
   const drag = (simulation) => {
     function dragstarted(event) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
+      if (!event.active) simulation.alphaTarget(0.3).restart()
+      event.subject.fx = event.subject.x
+      event.subject.fy = event.subject.y
     }
 
     function dragged(event) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
+      event.subject.fx = event.x
+      event.subject.fy = event.y
     }
 
     function dragended(event) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
+      if (!event.active) simulation.alphaTarget(0)
+      event.subject.fx = null
+      event.subject.fy = null
     }
 
-    return d3
-      .drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended);
-  };
+    return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
+  }
   
   if (nodes.length !== 0) {
     return (
       <svg ref={ref}
-          style={{
-            height: 550,
-            width: 600,
-            marginTop: "0px",
-            marginLeft: "4%",
-            backgroundColor: "#F0F0F0",
-            borderRadius: "3px"
+           style={{
+             height: 550,
+             width: 600,
+             marginTop: "0px",
+             marginLeft: "4%",
+             backgroundColor: "#F0F0F0",
+             borderRadius: "3px"
             }}>
         </svg>
-    );
+    )
   } else {
     return (
-        <svg
-          ref={refEmpty}
-          style={{
-            height: 550,
-            width: 600,
-            marginTop: "0px",
-            marginLeft: "4%",
-            backgroundColor: "#F0F0F0",
-            borderRadius: "3px"
-          }}>
-        </svg>
-    );
+      <svg ref={refEmpty}
+           style={{
+             height: 550,
+             width: 600,
+             marginTop: "0px",
+             marginLeft: "4%",
+             backgroundColor: "#F0F0F0",
+             borderRadius: "3px"
+            }}>
+      </svg>
+    )
   }
 }
 

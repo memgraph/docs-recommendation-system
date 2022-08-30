@@ -15,7 +15,7 @@ const Pagerank = ({ nodes }) => {
         .force("y", d3.forceY().y((d) => d.y))
         .force("charge", d3.forceManyBody().strength(100))
         .force("center", d3.forceCenter(width/2, height/2))
-        .force("collide", d3.forceCollide().radius((d) => d.rank * 1500));
+        .force("collide", d3.forceCollide().radius((d) => d.rank * 1500))
 
       const node = svg
         .append("g")
@@ -27,7 +27,7 @@ const Pagerank = ({ nodes }) => {
         .attr("r", function (d) { return d.rank * 500 })
         .attr("class", "node")
         .attr("fill", "#ff7701")
-        .call(drag(simulation));
+        .call(drag(simulation))
 
       var label = svg
         .selectAll(null)
@@ -39,46 +39,37 @@ const Pagerank = ({ nodes }) => {
         .style("fill", "#1b1c1d")
         .style("font-family", "Arial")
         .attr("font-weight", "700")
-        .style("font-size", "10px");
+        .style("font-size", "10px")
 
       simulation.on("tick", () => {
-        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+        node.attr("cx", (d) => d.x).attr("cy", (d) => d.y)
         label
-          .attr("x", function (d) {
-            return d.x;
-          })
-          .attr("y", function (d) {
-            return d.y - d.rank * 500 - 5;
-          });
-      });
-    },
-    [nodes.length]
+          .attr("x", function (d) { return d.x })
+          .attr("y", function (d) { return d.y - d.rank * 500 - 5 })
+      })
+    }, [nodes.length]
   );
 
   const drag = (simulation) => {
     function dragstarted(event) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
-      event.subject.fx = event.subject.x;
-      event.subject.fy = event.subject.y;
+      if (!event.active) simulation.alphaTarget(0.3).restart()
+      event.subject.fx = event.subject.x
+      event.subject.fy = event.subject.y
     }
 
     function dragged(event) {
-      event.subject.fx = event.x;
-      event.subject.fy = event.y;
+      event.subject.fx = event.x
+      event.subject.fy = event.y
     }
 
     function dragended(event) {
-      if (!event.active) simulation.alphaTarget(0);
-      event.subject.fx = null;
-      event.subject.fy = null;
+      if (!event.active) simulation.alphaTarget(0)
+      event.subject.fx = null
+      event.subject.fy = null
     }
 
-    return d3
-      .drag()
-      .on("start", dragstarted)
-      .on("drag", dragged)
-      .on("end", dragended);
-  };
+    return d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
+  }
   return (
     <svg
       ref={ref}
@@ -91,7 +82,7 @@ const Pagerank = ({ nodes }) => {
         borderRadius: "3px"
       }}
     ></svg>
-  );
+  )
 }
 
 export default Pagerank;

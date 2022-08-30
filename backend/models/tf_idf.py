@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# get most frequent words from each document 
+# get most frequent words from each document
 def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
     vectorizer = TfidfVectorizer()
     vectorizer.fit_transform(corpus)
@@ -21,7 +21,6 @@ def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
         
         # extract only the top 30
         keywords = extract_topn_from_vector(feature_names, sorted_items, 30)
-
         new_doc.append(set(keywords))
              
     return new_doc

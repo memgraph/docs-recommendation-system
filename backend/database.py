@@ -1,7 +1,7 @@
 from typing import List, Set
 
 import numpy as np
-from gqlalchemy import Field, Match, Memgraph, Node, Relationship
+from gqlalchemy import Field, Memgraph, Node, Relationship
 
 from utils.utils import create_matrix, get_name
 

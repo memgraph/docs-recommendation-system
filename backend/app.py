@@ -41,7 +41,7 @@ def recommend_docs():
             documents.insert(0, text)
             all_urls.insert(0, url + "/new_document")
 
-        # get the tail of the URL, i.e. its 'name' 
+        # get the tail of the URL, i.e. its 'name'
         first_url = all_urls[0] 
         ind = first_url.rfind('/')
         url_name = first_url[ind+1:]
