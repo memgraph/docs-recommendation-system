@@ -4,7 +4,7 @@ import requests
 from nltk.stem import WordNetLemmatizer
 
 # extract plain text from certain url using jusText, without unnecessary sidebars, tags, footers, etc.
-def extract_text(content, url: str) -> str:
+def extract_text(content: bytes, url: str) -> str:
     if url:
         response = requests.get(url)
         paragraphs = justext.justext(response.content, justext.get_stoplist("English"))

@@ -1,9 +1,7 @@
 import logging
 import os
 import threading
-import time
 from json import dumps
-from typing import Tuple
 
 from flask import Flask, make_response, render_template, request
 from flask_cors import CORS
@@ -12,7 +10,7 @@ from gqlalchemy.query_builders.declarative_base import Order
 
 from controller import Controller
 from database import memgraph, names
-from scraper import Scraper
+from utils.scraper import Scraper
 
 log = logging.getLogger(__name__)
 args = None
@@ -43,6 +41,7 @@ def recommend_docs():
             documents.insert(0, text)
             all_urls.insert(0, url + "/new_document")
 
+        # get the tail of the URL, i.e. its 'name' 
         first_url = all_urls[0] 
         ind = first_url.rfind('/')
         url_name = first_url[ind+1:]
@@ -53,35 +52,29 @@ def recommend_docs():
     
         recs_exist = False
         
-        # tf-idf
+        # call tf-idf algorithm
         x = threading.Thread(target=controller.tf_idf, args=(documents, all_urls,))
         x.start()
-        #controller.tf_idf(documents, all_urls)
         
-        # node2vec
+        # call node2vec algorithm
         y = threading.Thread(target=controller.node2vec, args=(documents, all_urls, url_name,))
         y.start()
-        #controller.node2vec(documents, all_urls, url_name)
         
-        # link prediction
+        # call link prediction algorithm
         z = threading.Thread(target=controller.link_prediction, args=(url_name,))
         z.start()
-        #controller.link_prediction(url_name)
         
         x.join()
         recs = controller.tf_idf_recs
-        if recs:
-            recs_exist = True
+        if recs: recs_exist = True
             
         y.join()
         recs = controller.node2vec_recs
-        if recs:
-            recs_exist = True
+        if recs: recs_exist = True
             
         z.join()
         recs = controller.link_prediction_recs
-        if recs:
-            recs_exist = True
+        if recs: recs_exist = True
         
         # alert if there are no recommendations    
         if not recs_exist:
@@ -214,9 +207,8 @@ def connect_to_memgraph():
         if memgraph._get_cached_connection().is_active():
             connection_established = True
 
-
 if __name__ == '__main__':
     if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-        #init_log()
+        init_log()
         connect_to_memgraph()
     app.run(debug=True, host="0.0.0.0", port=5000)

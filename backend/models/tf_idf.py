@@ -1,11 +1,12 @@
 import heapq
-from typing import List, Set
+from typing import Any, Dict, List, Set, Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+# get most frequent words from each document 
 def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
     vectorizer = TfidfVectorizer()
     vectorizer.fit_transform(corpus)
@@ -13,24 +14,24 @@ def tf_idf_keywords(corpus: List[str]) -> List[Set[str]]:
     
     new_doc = []
     for doc in corpus:
-        tf_idf_vector=vectorizer.transform([doc])
+        tf_idf_vector = vectorizer.transform([doc])
         
         # sort the tf-idf vectors by descending order of scores
-        sorted_items=sort_coo(tf_idf_vector.tocoo())
+        sorted_items = sort_coo(tf_idf_vector.tocoo())
         
         # extract only the top 30
-        keywords=extract_topn_from_vector(feature_names,sorted_items,30)
+        keywords = extract_topn_from_vector(feature_names, sorted_items, 30)
+
         new_doc.append(set(keywords))
-        
+             
     return new_doc
 
 def sort_coo(coo_matrix):
     tuples = zip(coo_matrix.col, coo_matrix.data)
     return sorted(tuples, key=lambda x: (x[1], x[0]), reverse=True)
 
+# get the feature names and tf-idf score of top n items
 def extract_topn_from_vector(feature_names, sorted_items, topn=30):
-    """Get the featuure names and tf-idf score of top n items."""
-    
     sorted_items = sorted_items[:topn]
     score_vals = []
     feature_vals = []
@@ -46,7 +47,7 @@ def extract_topn_from_vector(feature_names, sorted_items, topn=30):
     
     return results
 
-def tf_idf(corpus: List[str]):
+def tf_idf(corpus: List[str]) -> Tuple[Any, Dict[Any, tuple]]:
     vectorizer = TfidfVectorizer()
     tfidf_matrix = vectorizer.fit_transform(corpus)
     feature_names = vectorizer.get_feature_names_out()
@@ -68,7 +69,8 @@ def tf_idf(corpus: List[str]):
     
     return cosine_sim, top_keywords
 
-def get_recommendations(corpus: List[str]):
+# get recommendations based on tf-idf algorithm
+def get_recommendations(corpus: List[str]) -> Tuple[np.ndarray, List[float], Dict[Any, tuple]]:
     similarity_matrix, top_keywords = tf_idf(corpus)
     url_order_num = 0
     similarities = similarity_matrix[url_order_num]

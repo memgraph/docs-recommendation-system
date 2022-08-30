@@ -1,6 +1,6 @@
 import gc
 import itertools
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import numpy as np
 from gqlalchemy import Match
@@ -8,7 +8,7 @@ from gqlalchemy import Match
 PRECISION_AT_K_CONST = 2 ** 8
 
 # exports "embedding" property from all nodes in Memgraph db    
-def get_embeddings_as_properties():
+def get_embeddings_as_properties() -> Tuple[List[Dict[str, Any]], Dict[str, List[float]]]:
     embeddings: Dict[str, List[float]] = {}
  
     results = list (
@@ -50,7 +50,7 @@ def calculate_adjacency_matrix(embeddings: Dict[str, List[float]], threshold=0.0
     return adj_mtx_r
 
 # we need to sort predicted edges so that ones that are most likely to appear are first in list
-def predict(embeddings: Dict[str, List[float]]):
+def predict(embeddings: Dict[str, List[float]]) -> Dict[Tuple[str, str], float]:
     adj_matrix = calculate_adjacency_matrix(embeddings=embeddings, threshold=0.0)
     
     predicted_edge_list = adj_matrix
