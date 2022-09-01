@@ -53,26 +53,20 @@ def recommend_docs():
         recs_exist = False
         
         # call tf-idf algorithm
-        x = threading.Thread(target=controller.tf_idf, args=(documents, all_urls,))
-        x.start()
+        controller.tf_idf(documents, all_urls)
         
         # call node2vec algorithm
-        y = threading.Thread(target=controller.node2vec, args=(documents, all_urls, url_name,))
-        y.start()
+        controller.node2vec(documents, all_urls, url_name)
         
         # call link prediction algorithm
-        z = threading.Thread(target=controller.link_prediction, args=(url_name,))
-        z.start()
+        controller.link_prediction(url_name)
         
-        x.join()
         recs = controller.tf_idf_recs
         if recs: recs_exist = True
             
-        y.join()
         recs = controller.node2vec_recs
         if recs: recs_exist = True
             
-        z.join()
         recs = controller.link_prediction_recs
         if recs: recs_exist = True
         

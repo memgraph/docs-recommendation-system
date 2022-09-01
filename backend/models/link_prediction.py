@@ -55,7 +55,4 @@ def link_prediction() -> Tuple[List[Dict[str, Any]], Dict[Tuple[str, str], float
     # we need to sort predicted edges so that ones that are most likely to appear are first in list
     sorted_predicted_edges = {k: v for k, v in sorted(predicted_edge_list.items(), key=lambda item: -1 * item[1])}
     
-    # taking only edges that we are predicting to appear, not ones that are already in graph
-    sorted_predicted_edges = {k: v for k, v in sorted_predicted_edges.items() if k not in train_edges_dict}
-    
     return nodes, sorted_predicted_edges
