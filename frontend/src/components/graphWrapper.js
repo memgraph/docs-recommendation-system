@@ -9,7 +9,7 @@ export const GraphWrapper = ({ nodes, links }) => {
 
     return (
         <Box sx={{ width: "60%", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center" }} >
-            <ListSubheader sx={{ display: 'inline-flex', fontSize: "19px" }} disableSticky="true">
+            <ListSubheader sx={{ display: 'inline-flex', fontSize: "19px" }} disableSticky={true}>
                 Graph visualization
             </ListSubheader>
             <Graph nodesData={nodesData} linksData={linksData} />

@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List, Set
 
 import numpy as np
@@ -7,6 +8,10 @@ from utils.utils import create_matrix, get_name
 
 memgraph = Memgraph()
 names = {}
+
+class NodeConstants(str, Enum):
+    NAME = "name"
+    URL = "url"
 
 class WebPage(Node):
     url: str = Field(index=True, exist=True, unique=True, db=memgraph)

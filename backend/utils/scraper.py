@@ -1,4 +1,5 @@
 import os
+from http import HTTPStatus
 from multiprocessing.pool import ThreadPool
 from os.path import abspath
 from typing import List, Tuple
@@ -7,7 +8,7 @@ from urllib.parse import urljoin, urlparse
 import httplib2
 from bs4 import BeautifulSoup
 
-from .extractor import extract_text
+from utils.extractor import extract_text
 
 class Scraper:
     http = httplib2.Http()
@@ -54,8 +55,8 @@ class Scraper:
         self.g_url = url
         response, content = self.http.request(url)
         
-        if response.status == 404:
-            return [], [], 404
+        if response.status == HTTPStatus.NOT_FOUND:
+            return [], [], HTTPStatus.NOT_FOUND
         
         joined_path = self.is_valid_url(url, url)
         if joined_path:
@@ -66,7 +67,7 @@ class Scraper:
             
         soup = BeautifulSoup(content, features="lxml")
 
-        with ThreadPool(20) as pool:
+        with ThreadPool(30) as pool:
             pool.map(self.scrape, soup.find_all('a', href=True))
             
-        return self.documents, self.all_urls, 200
+        return self.documents, self.all_urls, HTTPStatus.OK

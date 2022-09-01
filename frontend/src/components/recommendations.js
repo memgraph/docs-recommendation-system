@@ -94,7 +94,7 @@ export const Recommendations = ({ data, updateStats, updateGraph, updatePagerank
             <Divider variant="middle" />
             <Box sx={{display: 'flex', flexDirection: "column", alignItems: "left", justifyContent: "left", marginLeft: "15px", marginTop: "8px" }}>
                 <List sx={{ '& .MuiListItem-root:hover': {backgroundColor: "#F0F0F0", borderRadius: "3px"} }} subheader={
-                        <ListSubheader sx={{ textAlign: "left", fontSize: "19px" }} disableSticky="true">
+                        <ListSubheader sx={{ textAlign: "left", fontSize: "19px" }} disableSticky={true}>
                             Link prediction recommendations
                         </ListSubheader>}>
                     { link_predictionsItems.map((item, index) => <RecsItem key={index} url={item} name={getPageName(item)} showGraph={showGraph} updateGraph={updateGraphData_}/>) }

@@ -9,7 +9,6 @@ def jaccard_measure(set1: Set[str], set2: Set[str]) -> float:
 
     return 0 if union == 0 else float(intersection) / union
 
-
 # creates url matrix based on jaccard's measure 
 def create_matrix(key_sets: List[Set[str]]): 
     

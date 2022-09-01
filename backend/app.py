@@ -1,6 +1,6 @@
 import logging
 import os
-import threading
+from http import HTTPStatus
 from json import dumps
 
 from flask import Flask, make_response, render_template, request
@@ -9,7 +9,7 @@ from gqlalchemy import Call, Match, Node
 from gqlalchemy.query_builders.declarative_base import Order
 
 from controller import Controller
-from database import memgraph, names
+from database import NodeConstants, memgraph, names
 from utils.scraper import Scraper
 
 log = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def recommend_docs():
     try:
         documents, all_urls, status = scraper.get_links_and_documents(url)
 
-        if status == 404:
+        if status == HTTPStatus.NOT_FOUND:
             return make_response("", status)
 
         # recommend docs based on text input
@@ -72,18 +72,18 @@ def recommend_docs():
         
         # alert if there are no recommendations    
         if not recs_exist:
-            return make_response("", -1)
+            return make_response("", HTTPStatus.NO_CONTENT)
         
         recs = {"tf-idf": controller.tf_idf_recs, "similarities": controller.similarities,
                 "top_keywords": controller.top_keywords, "node2vec": controller.node2vec_recs, 
                 "link_prediction": controller.link_prediction_recs, "names": names}
 
-        return make_response(dumps(recs), 200)
+        return make_response(dumps(recs), HTTPStatus.OK)
         
     except Exception as e:
         log.info("Something went wrong.")
         log.info(e)
-        return ("", 500)
+        return ("", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 @app.route("/pagerank")
 def get_pagerank():
@@ -110,12 +110,12 @@ def get_pagerank():
             page_rank_list.append(dict_copy)
 
         res = {"page_rank": page_rank_list}
-        return make_response(res, 200)
+        return make_response(res, HTTPStatus.OK)
 
     except Exception as e:
         log.info("Fetching users' ranks using pagerank went wrong.")
         log.info(e)
-        return ("", 500)
+        return ("", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 @app.route("/webpage/")
 def get_webpage():
@@ -131,30 +131,29 @@ def get_webpage():
             .return_() \
             .execute()
 
-        results_list = []
+        node_pairs = []
         links_set = set()
         names_set = set()
         nodes_set = set()
         
         for result in results:
-            node: Node = result["node_a"]
-            name_a = node._properties["name"]
-            url_a = node._properties["url"]
+            node_source: Node = result["node_a"]
+            name_a = node_source._properties[NodeConstants.NAME]
+            url_a = node_source._properties[NodeConstants.URL]
             
-            node2: Node = result["node_b"]
-            name_b = node2._properties["name"]
-            url_b = node2._properties["url"]
+            node_target: Node = result["node_b"]
+            name_b = node_target._properties[NodeConstants.NAME]
+            url_b = node_target._properties[NodeConstants.URL]
 
-            results_list.append([(name_a, url_a), (name_b, url_b)])
+            node_pairs.append([(name_a, url_a), (name_b, url_b)])
         
-        for result in results_list:
-            if result[0][1] == url:
-                source_name = result[0][0] 
-                main_name = result[0][0]
-                source_url = result[0][1]
+        for node_pair in node_pairs:
+            if node_pair[0][1] == url:
+                source_name = main_name = node_pair[0][0]
+                source_url = node_pair[0][1]
 
-                target_name = result[1][0] 
-                target_url = result[1][1]
+                target_name = node_pair[1][0] 
+                target_url = node_pair[1][1]
                 
                 if source_name not in names_set:
                     nodes_set.add((source_name, source_url, 0))
@@ -166,13 +165,13 @@ def get_webpage():
                     links_set.add((source_name, target_name))                   
 
         for name in names_set:
-            for result in results_list:
-                if result[0][0] == name and result[0][0] != main_name:
-                    source_name = result[0][0] 
-                    source_url = result[0][1]
+            for node_pair in node_pairs:
+                if node_pair[0][0] == name and node_pair[0][0] != main_name:
+                    source_name = node_pair[0][0] 
+                    source_url = node_pair[0][1]
 
-                    target_name = result[1][0] 
-                    target_url = result[1][1]
+                    target_name = node_pair[1][0] 
+                    target_url = node_pair[1][1]
                 
                     if target_name not in names_set:
                         nodes_set.add((target_name, target_url, 2))
@@ -183,12 +182,12 @@ def get_webpage():
         links = [{"source": n_name, "target": m_name} for (n_name, m_name) in links_set]
         res = {"nodes": nodes, "links": links, "base_url": url}
 
-        return make_response(res, 200)
+        return make_response(res, HTTPStatus.OK)
     
     except Exception as e:
         log.info("Fetching URL went wrong.")
         log.info(e)
-        return ("", 500)
+        return ("", HTTPStatus.INTERNAL_SERVER_ERROR)
 
 def init_log():
     logging.basicConfig(level=logging.DEBUG)

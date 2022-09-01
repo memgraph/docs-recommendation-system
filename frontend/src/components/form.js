@@ -45,7 +45,7 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
                 alert("Page not found.")
                 return
             }
-            else if(response.status === -1) {
+            else if(response.status === 204) {
                 alert("Nothing to recommend.")
                 updateRecs({})
                 return

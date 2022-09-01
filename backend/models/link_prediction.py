@@ -5,7 +5,7 @@ from database import memgraph
 from gqlalchemy import Match, Node
 from sklearn.model_selection import train_test_split
 
-from .node2vec import calculate_adjacency_matrix, get_embeddings_as_properties
+from models.node2vec import calculate_adjacency_matrix, get_embeddings_as_properties
 
 def get_all_edges() -> List[Tuple[Node, Node]]:
     results = Match() \
