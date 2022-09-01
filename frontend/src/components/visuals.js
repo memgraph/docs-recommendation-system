@@ -25,9 +25,9 @@ export const Visualisation = ({ data, graphData, pageRankData, displayStats, dis
             { showStats ? <Statistics data={recs} /> :
               ( showPagerank ? <PagerankWrapper pagerankData={pagerankData}/> : 
                 ( showGraph ? <GraphWrapper nodes={graph.nodes} links={graph.links} /> :
-                    (<Box sx={{ width: "60%", alignItems: "center", justifyContent: 'center' }}>
+                    (<Box sx={{ width: "60%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-start" }}>
                         <img style={{ paddingTop: "15%" }} src="https://playground.memgraph.com/assets/img/GraphView.svg" alt="" width="320" height="160"></img>
-                        <Typography sx={{ paddingTop: "10px" }} variant="subtitle1">
+                        <Typography sx={{ paddingTop: "10px", width: 320 }} variant="body1">
                             To visualize data or show statistics, click on one of the buttons on the left. 
                         </Typography>
                     </Box>)

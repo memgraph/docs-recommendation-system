@@ -1,7 +1,8 @@
 import React from "react";
 import axios from 'axios';
-import { ListItem, Link, Button } from '@mui/material';
+import { ListItem, Link, Button, Tooltip } from '@mui/material';
 import InsightsIcon from '@mui/icons-material/Insights';
+import LaunchIcon from '@mui/icons-material/Launch';
 
 
 export const RecsItem = ({ url, name, showGraph, updateGraph }) => {
@@ -30,14 +31,17 @@ export const RecsItem = ({ url, name, showGraph, updateGraph }) => {
     }
     
     return ( 
-        <ListItem sx={{ display: 'flex', alignItems: "left", justifyContent: "space-between" }} 
-                        key={link}><Link href={link} underline="hover" target="_blank" 
-                        rel="noopener noreferrer">
-                        { short_name }
-                        </Link>
-            <Button sx={{ marginLeft: "5px" }} onClick={getGraphData}>
-                <InsightsIcon sx={{color: "#fb6e00"}}></InsightsIcon>
-            </Button>
+        <ListItem sx={{ display: 'flex', alignItems: "left", justifyContent: "space-between", marginBottom: "5px", paddingBottom: "0px", paddingTop: "0px" }} key={link}>
+            <Link sx={{ fontSize: "17px" }} href={link} underline="hover" target="_blank" rel="noopener noreferrer">
+                { short_name }
+                <LaunchIcon sx={{ color: "#fb6e00", paddingLeft: "5px", fontSize: "medium" }}/>
+            </Link>
+            <Tooltip title={<span style={{ fontSize: "14px" }}>Show graph visualization</span>} placement="right">
+                <Button sx={{ marginLeft: "5px", padding: "5px" }} variant="outlined" onClick={getGraphData}>
+                    Graph
+                    <InsightsIcon sx={{ color: "#fb6e00", paddingLeft: "5px", paddingTop: "0px", paddingBottom: "0px" }} />
+                </Button>
+            </Tooltip>
         </ListItem >
     );
 }

@@ -29,7 +29,7 @@ export const Statistics = ({ data }) => {
     return ( 
         <Box sx={{ width: "60%", justifyContent: 'center' }}>
             <List sx={{paddingLeft: "4%"}} subheader={
-                <ListSubheader sx={{ display: 'inline-flex', fontSize: "17px" }} disableSticky="true">
+                <ListSubheader sx={{ display: 'inline-flex', fontSize: "19px" }} disableSticky={true}>
                     Statistics of the TF-IDF algorithm
                 </ListSubheader>}>
                 <TableContainer component={Paper}>

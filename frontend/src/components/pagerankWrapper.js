@@ -8,8 +8,8 @@ export const PagerankWrapper = ({ pagerankData }) => {
     console.log(data)
 
     return ( 
-        <Box sx={{ width: "60%", justifyContent: 'center' }}>
-            <ListSubheader sx={{ display: 'inline-flex', fontSize: "17px" }} disableSticky="true">
+        <Box sx={{ width: "60%", display: "flex", flexDirection: "column", justifyContent: "flex-start", alignItems: "center" }}>
+            <ListSubheader sx={{ display: 'inline-flex', fontSize: "19px" }} disableSticky="true">
                 Pagerank visualization
             </ListSubheader>
             <Pagerank nodes={data} />

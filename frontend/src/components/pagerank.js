@@ -78,7 +78,7 @@ const Pagerank = ({ nodes }) => {
         width: 600,
         marginLeft: "4%",
         marginTop: "0px",
-        backgroundColor: "#F0F0F0",
+        backgroundColor: "#F9F9F9",
         borderRadius: "3px"
       }}
     ></svg>

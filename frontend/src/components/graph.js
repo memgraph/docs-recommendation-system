@@ -53,6 +53,7 @@ const Graph = ({ nodesData, linksData }) => {
         .style("text-anchor", "middle")
         .style("fill", "black")
         .style("font-family", "Arial")
+        .attr("font-weight", "550")
         .style("font-size", "12px")
 
       simulation.on("tick", () => {
@@ -65,7 +66,7 @@ const Graph = ({ nodesData, linksData }) => {
         node.attr("cx", (d) => d.x).attr("cy", (d) => d.y)
         label
           .attr("x", function (d) { return d.x })
-          .attr("y", function (d) { return d.y - 15 })
+          .attr("y", function (d) { return d.y - (30 - d.depth*5) - 3 })
       });
     }, [nodes.length]
   );
@@ -116,7 +117,7 @@ const Graph = ({ nodesData, linksData }) => {
              width: 600,
              marginTop: "0px",
              marginLeft: "4%",
-             backgroundColor: "#F0F0F0",
+             backgroundColor: "#F9F9F9",
              borderRadius: "3px"
             }}>
         </svg>
@@ -129,7 +130,7 @@ const Graph = ({ nodesData, linksData }) => {
              width: 600,
              marginTop: "0px",
              marginLeft: "4%",
-             backgroundColor: "#F0F0F0",
+             backgroundColor: "#F9F9F9",
              borderRadius: "3px"
             }}>
       </svg>

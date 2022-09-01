@@ -15,6 +15,7 @@ class Controller:
         self.tf_idf_recs = []
         self.node2vec_recs = []
         self.link_prediction_recs = []
+        self.max_num_recs = 5
 
     def tf_idf(self, documents:List[str], all_urls:List[str]) -> bool: 
         if len(documents) > 1:
@@ -33,7 +34,7 @@ class Controller:
         num_of_recs = 0
         top_rec_name = []
         for key in predicted_edges:
-            if num_of_recs == 3:
+            if num_of_recs == self.max_num_recs:
                 break
             if key[0] == url_name:
                 top_rec_name.append(key[1])
@@ -56,7 +57,7 @@ class Controller:
         self.link_prediction_recs = []
 
         for key in precise_edges:
-            if num_of_recs == 3:
+            if num_of_recs == self.max_num_recs:
                 break
             if key[0] == url_name:
                 top_link_name.append(key[1])
