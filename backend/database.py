@@ -1,13 +1,17 @@
-import gc
-import itertools
-from typing import Dict, List, Set, Tuple
+from enum import Enum
+from typing import List, Set
 
 import numpy as np
-from gqlalchemy import Match, Memgraph, Node, Create, Field, Relationship
+from gqlalchemy import Field, Memgraph, Node, Relationship
+
+from utils.utils import create_matrix, get_name
 
 memgraph = Memgraph()
 names = {}
-NUM_OF_CONNECTIONS = 4
+
+class NodeConstants(str, Enum):
+    NAME = "name"
+    URL = "url"
 
 class WebPage(Node):
     url: str = Field(index=True, exist=True, unique=True, db=memgraph)
@@ -16,47 +20,6 @@ class WebPage(Node):
 class SimilarTo(Relationship, type="SIMILAR_TO"):
     pass
 
-# jaccard's measure between two sets of keywords
-def jaccard_set(set1: Set[str], set2: Set[str]) -> float:
-    intersection = len(list(set(set1).intersection(set2)))
-    union = (len(set1) + len(set2)) - intersection
-
-    return 0 if union == 0 else float(intersection) / union
-
-# creates url matrix based on jaccard's measure 
-def create_matrix(key_sets: List[Set[str]]): 
-    
-    length = len(key_sets)
-    A = np.empty((length, length))
-    
-    for i in range(length):
-        for j in range(length):
-            A[i][j] = 0 if i == j else jaccard_set(key_sets[i], key_sets[j])
-    return A
-
-def find2nd(string , ch) :
-    s = string[::-1]
-    occur = 0;
- 
-    for i in range(len(s)) :
-        if (s[i] == ch) :
-            occur += 1;
- 
-        if (occur == 2) :
-            return len(s)-i-1;
-    
-    return -1;
-
-def getName(string):
-    index = string.rfind('/')
-    name = string[index+1:]
-    
-    for key in names:
-        if names[key] == name:
-            index = find2nd(string, '/')
-            name = string[index+1:]
-    return name
-
 # import data into Memgraph db
 def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     
@@ -64,11 +27,12 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
     memgraph.execute(query)
     
     # create nodes of urls
+    names.clear()
     for url in urls:
-        s = getName(url)
+        s = get_name(names, url)
         names[url] = s
         WebPage(name=s, url=url).save(memgraph)
-        
+    
     similarity_matrix = create_matrix(key_sets)
     
     for i in range(len(urls)):
@@ -77,17 +41,18 @@ def populate_db(urls: List[str], key_sets: List[Set[str]]) -> None:
         row = similarity_matrix[i]
         row_as_array = np.array(row)
         
+        num_of_connections = 4
         # most similar nodes in certain row
-        similar_nodes_indices = np.argpartition(row_as_array, -NUM_OF_CONNECTIONS)[-NUM_OF_CONNECTIONS:]
+        similar_nodes_indices = np.argpartition(row_as_array, -num_of_connections)[-num_of_connections:]
         
         s = names[url]
         s_node = WebPage(url=url, name=s).load(db=memgraph)
-       
+        
         for index in similar_nodes_indices:
             if index:
                 similar_nodes.append(urls[index])
         
-        # create realtionships
+        # create relationships
         for similar_node in similar_nodes:
             e = names[similar_node]
             e_node = WebPage(url=similar_node, name=e).load(db=memgraph)

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { FormControl, Input, Button, TextField, Box} from '@mui/material';
+import { FormControl, Button, TextField, Box, Tooltip, Typography } from '@mui/material';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
@@ -8,6 +8,7 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
 
     const [show, setShow] = useState(true)
     const [url, setUrl] = useState("")
+    const [validUrl, setValidUrl] = useState(true)
     const [text, setText] = useState("")
 
     const handleUrlChange = (event) => { setUrl(event.target.value) }
@@ -19,10 +20,12 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
 
         let okRequest = true
 
-        if(!isValidHttpUrl(url))  {
-            alert("URL is not valid.")
+        if(!isValidHttpUrl(url)) {
+            setValidUrl(false)
             return
         }
+        else setValidUrl(true)
+
         updateLoader(true)
         updateDisplay(false)
 
@@ -42,7 +45,7 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
                 alert("Page not found.")
                 return
             }
-            else if(response.status === -1) {
+            else if(response.status === 204) {
                 alert("Nothing to recommend.")
                 updateRecs({})
                 return
@@ -55,7 +58,7 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
         if(okRequest){        
             updateLoader(false)
             updateDisplay(true)
-            updateRecs(response.data)
+            updateRecs(response.data, url)
         }
     }
 
@@ -74,21 +77,32 @@ export const Form = ({updateRecs, updateLoader, updateDisplay}) => {
     return (
         <>
             <Box>
-            {show && 
-                <FormControl style={{ width: "35%"}} >
-                    <Input sx={{ marginBottom: "20px" }} placeholder="documentation link" onChange={handleUrlChange}/>
-                    <TextField sx={{ marginBottom: "10px" }} 
-                            id="standard-multiline-static" 
-                            label="Recommend by text:" 
-                            multiline rows={8} defaultValue="" variant="standard"
-                            onChange={handleTextChange}/>
-                    <Button onClick={handleSubmit}>Recommend</Button>
-                </FormControl>
+            {show &&
+                <> 
+                    <Typography sx={{ paddingBottom: "20px", fontSize: "18px"}} variant="subtitle1">
+                        Welcome to Docs Recommendation System! Fill form below and get the best documentation recommendations.
+                    </Typography>
+                    <FormControl style={{ width: "35%"}} >
+                        <Tooltip title={<span style={{ fontSize: "14px" }}>Add any URL of certain documentation</span>} placement="left" arrow>
+                            <TextField sx={{ marginBottom: "20px" }} label="URL" variant="standard"
+                                    required onChange={handleUrlChange} 
+                                    error={!validUrl} helperText={!validUrl ? "URL is not valid" : ""}/>
+                        </Tooltip>
+                        <Tooltip title={<span style={{ fontSize: "14px" }}>Optionally, recommend pages within the documentation based on this text</span>} placement="right" arrow>
+                            <TextField sx={{ marginBottom: "10px" }} 
+                                    id="standard-multiline-static" 
+                                    label="Text" 
+                                    multiline rows={8} defaultValue="" variant="standard"
+                                    onChange={handleTextChange}/>
+                        </Tooltip>
+                        <Button onClick={handleSubmit} disabled={url === ""}>Recommend</Button>
+                    </FormControl>
+                </>
             }
             </Box>
             <Button onClick={() => setShow(prev => !prev)}>
-                {show && <ExpandLessIcon sx={{color: "#fb6e00"}}></ExpandLessIcon>}
-                {!show && <ExpandMoreIcon sx={{color: "#fb6e00"}}></ExpandMoreIcon>}
+                {show && <><ExpandLessIcon sx={{color: "#fb6e00"}} /></>}
+                {!show && <>Show form<ExpandMoreIcon sx={{color: "#fb6e00"}} /></>}
             </Button>
         </>
     );

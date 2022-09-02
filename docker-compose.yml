@@ -14,7 +14,6 @@ services:
       [
           "/usr/lib/memgraph/memgraph",
           "--telemetry-enabled=false",
-          "--query-modules-directory=/procedures,/transformations,/usr/lib/memgraph/query_modules",
           "--log-level=TRACE",
       ]
     networks:
@@ -44,7 +43,7 @@ services:
     environment:
       MG_HOST: memgraph-mage
       MG_PORT: 7687
-      WATCHPACK_POLLING: true
+      WATCHPACK_POLLING: "true"
     depends_on:
       - backend-app
     networks:
