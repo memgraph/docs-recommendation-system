@@ -35,3 +35,7 @@ Check out statistics retrieved with TD-IDF algorithm
 Get the **PageRank** [MAGE](https://memgraph.com/docs/mage) algorithm.
 
 ![](/images/app_3.png)
+
+## :page_with_curl: Blog post
+
+If you'd like to find out more about the process of building the app, hop on to the [blog post](https://memgraph.com/blog/lost-in-documentation-let-our-docs-recommendation-system-guide-you-along) where we explained it in details!   
